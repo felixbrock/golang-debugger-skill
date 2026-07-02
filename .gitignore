@@ -3,3 +3,4 @@
 __debug_bin*
 benchmarks/results-adopt/
 benchmarks/adopt/run_all.log
+benchmarks/repo/run_repo.log

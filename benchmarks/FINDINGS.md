@@ -127,6 +127,48 @@ real repo; (3) failure modes reading can't reach in principle: state that
 exists only under load, concurrency interleavings, external inputs; (4)
 interactive use by humans.
 
+## Tier 2: real bugs in a real codebase (esbuild, 95k LOC)
+
+The last regime where a token win was plausible: bugs whose surrounding
+codebase is too large to just read. 12 real, merged esbuild bug fixes
+(mined from history: `fix #NNNN` commits shipping a regression test plus a
+≤60-line source fix, each mechanically validated red-at-parent /
+green-with-fix — `repo/cases.json`). Per case the harness resets a worktree
+to the fix's parent, overlays only the test/snapshots, confirms red, and
+runs the agent to re-derive the fix; the overlay is re-checked-out before
+verification so tampering with tests can't fake a pass. Conditions: pure
+agent (`without`) vs gdbg mandated via the artifact-gate prompt (`with`) —
+availability notes yield ~0% adoption, and this measures benefit-when-used.
+
+| | without | with |
+|---|---|---|
+| solved | **12/12** | **12/12** |
+| mean tokens | 708k | 1,280k (1.81×) |
+| median tokens | 419k | 707k (1.69×) |
+| mean wall | 173s | 227s |
+| mean gdbg calls | 0 | 7.1 |
+
+Still no crossing — but the texture changed:
+
+- On the two cases where reading was most expensive (`e0755b46` parens for
+  `new` expressions, 2.0M tokens without; `2b6452b5` `import =` under
+  `es5`), the debugger arm reached **token parity and clearly better wall
+  time** (280s vs 472s; 213s vs 270s). First sightings of the gap actually
+  closing on individual bugs.
+- The with-arm mean is dominated by one 6.2M-token run (`308ad745`, nested
+  `var` renaming) — not tool friction (1 error in 24 gdbg calls) but a
+  genuinely long session of conditional breakpoints and symbol-table evals.
+  Excluding that case from both arms: 608k vs 829k (1.36×).
+- gdbg held up operationally in a 95k-line codebase: agents set breakpoints
+  in deep internals (`internal/renamer`), evaluated indexed expressions into
+  real data structures, and traced across packages, with essentially no CLI
+  friction.
+
+This mirrors the Rust tier-2 experience (on a 1.7M-line repo the agent
+never reached for rdbg and grep-fixed everything), with one upgrade: forced
+adoption now *works* and is approaching break-even exactly where reading is
+most expensive — without ever beating it.
+
 ## Bottom line
 
 1. Passive availability still yields ~0% adoption, across languages and model

@@ -1,0 +1,197 @@
+[
+  {
+    "sha": "83a2cbfc35809f4fd5152da59572d7bed7739d78",
+    "parent": "308ad745d824c77bc607603451b257d0f2fd9a38",
+    "bug": "fix #4482: don't inline `using` declarations",
+    "overlay": [
+      "internal/js_parser/js_parser_test.go"
+    ],
+    "code": [
+      "internal/js_parser/js_parser.go"
+    ],
+    "codelines": 2,
+    "pkgs": [
+      "./internal/js_parser/"
+    ]
+  },
+  {
+    "sha": "308ad745d824c77bc607603451b257d0f2fd9a38",
+    "parent": "f013f5f99a015bce92ec48d49181d4ad3177b29b",
+    "bug": "fix #4471: renaming of nested `var` declarations",
+    "overlay": [
+      "internal/bundler_tests/bundler_default_test.go",
+      "internal/bundler_tests/snapshots/snapshots_default.txt",
+      "internal/bundler_tests/snapshots/snapshots_ts.txt"
+    ],
+    "code": [
+      "internal/js_parser/js_parser.go"
+    ],
+    "codelines": 12,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  },
+  {
+    "sha": "2b6452b5be871c8c2350ee0466dbbb1cdce11e8c",
+    "parent": "e0755b46922195b1b340e3d6f84d11eb7c10a3b6",
+    "bug": "fix #4448: `import =` uses `var` with `es5` target",
+    "overlay": [
+      "internal/bundler_tests/bundler_lower_test.go",
+      "internal/bundler_tests/snapshots/snapshots_lower.txt",
+      "internal/js_parser/ts_parser_test.go"
+    ],
+    "code": [
+      "internal/js_parser/js_parser.go"
+    ],
+    "codelines": 5,
+    "pkgs": [
+      "./internal/bundler_tests/",
+      "./internal/js_parser/"
+    ]
+  },
+  {
+    "sha": "e0755b46922195b1b340e3d6f84d11eb7c10a3b6",
+    "parent": "2faedf5e15cc4b954989fe692eef9640133ae280",
+    "bug": "fix #4477: parens edge cases for `new` expressions",
+    "overlay": [
+      "internal/bundler_tests/bundler_ts_test.go",
+      "internal/bundler_tests/snapshots/snapshots_ts.txt",
+      "internal/js_parser/js_parser_test.go"
+    ],
+    "code": [
+      "internal/js_parser/js_parser.go",
+      "internal/js_printer/js_printer.go"
+    ],
+    "codelines": 18,
+    "pkgs": [
+      "./internal/bundler_tests/",
+      "./internal/js_parser/"
+    ]
+  },
+  {
+    "sha": "64ee0ea63b2ff303caafc9610c388dc72c882c23",
+    "parent": "ef65aeeaacdb71eade186f888975b1de89574314",
+    "bug": "fix #4435: support `with { type: text }` imports",
+    "overlay": [
+      "internal/bundler_tests/bundler_loader_test.go",
+      "internal/bundler_tests/snapshots/snapshots_loader.txt"
+    ],
+    "code": [
+      "internal/bundler/bundler.go"
+    ],
+    "codelines": 5,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  },
+  {
+    "sha": "8b829b1bdfeb2b11aa16a643b5bfee108066cab0",
+    "parent": "4384badefe3a07b80b3f3eba832c17d0c806dd4c",
+    "bug": "fix #4407: incorrect error for inject edge case",
+    "overlay": [
+      "internal/bundler_tests/bundler_default_test.go",
+      "internal/bundler_tests/snapshots/snapshots_default.txt"
+    ],
+    "code": [
+      "internal/linker/linker.go"
+    ],
+    "codelines": 11,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  },
+  {
+    "sha": "4384badefe3a07b80b3f3eba832c17d0c806dd4c",
+    "parent": "9129e00e6c36a3e374820cb5e3fc2cd319c8ab85",
+    "bug": "fix #4395 close #4405 close #4406: parens for `or`",
+    "overlay": [
+      "internal/css_parser/css_parser_test.go"
+    ],
+    "code": [
+      "internal/css_printer/css_printer.go"
+    ],
+    "codelines": 6,
+    "pkgs": [
+      "./internal/css_parser/"
+    ]
+  },
+  {
+    "sha": "b791ac3881fb4efc31e5e15c846ef804656c6f80",
+    "parent": "51e54561dfb5d778cdd971d7b58f6b5b1b2df2c4",
+    "bug": "fix #4370: preserve url fragments in data URLs",
+    "overlay": [
+      "internal/bundler_tests/snapshots/snapshots_loader.txt"
+    ],
+    "code": [
+      "internal/bundler/bundler.go"
+    ],
+    "codelines": 4,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  },
+  {
+    "sha": "c8d93a7081e0e581b04e861674a8b2fec089fe74",
+    "parent": "92ff12c2e8a44210178bbdb19d403e918cff2e38",
+    "bug": "fix #4357: -webkit- prefix for mask shorthand (#4358)",
+    "overlay": [
+      "internal/css_parser/css_parser_test.go"
+    ],
+    "code": [
+      "internal/compat/css_table.go"
+    ],
+    "codelines": 7,
+    "pkgs": [
+      "./internal/css_parser/"
+    ]
+  },
+  {
+    "sha": "6f8ec15b15e70ff29a1966bf7b3bd24f8d6a0f5a",
+    "parent": "f7ae61f6b2a77dc2fc3229a6bb21fb44c3fb8f5b",
+    "bug": "fix: allow subpath imports that start with `#/` (#4361)",
+    "overlay": [
+      "internal/bundler_tests/bundler_packagejson_test.go",
+      "internal/bundler_tests/snapshots/snapshots_packagejson.txt"
+    ],
+    "code": [
+      "internal/resolver/resolver.go"
+    ],
+    "codelines": 6,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  },
+  {
+    "sha": "4e4e177bf252829472fc827aa421554cf436b40a",
+    "parent": "d6427c91edab734da686c4c5d29ed580b08b9fd5",
+    "bug": "fix #4351: label + `try` + `for` minifier bug",
+    "overlay": [
+      "internal/js_parser/js_parser_test.go"
+    ],
+    "code": [
+      "internal/js_ast/js_ast.go",
+      "internal/js_parser/js_parser.go",
+      "internal/js_parser/js_parser_lower.go"
+    ],
+    "codelines": 14,
+    "pkgs": [
+      "./internal/js_parser/"
+    ]
+  },
+  {
+    "sha": "d3c67f9e94267d06337d2e2e0d837844d2cac6bd",
+    "parent": "4a51f0b24d343d7ae5b7d5a3e5c3afce3f96a0f8",
+    "bug": "fix #4310: add `Iterator` and other known globals",
+    "overlay": [
+      "internal/bundler_tests/bundler_dce_test.go",
+      "internal/bundler_tests/snapshots/snapshots_dce.txt"
+    ],
+    "code": [
+      "internal/config/globals.go"
+    ],
+    "codelines": 38,
+    "pkgs": [
+      "./internal/bundler_tests/"
+    ]
+  }
+]

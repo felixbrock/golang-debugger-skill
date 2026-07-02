@@ -42,6 +42,24 @@ python3 adopt/summarize.py adopt/results.jsonl
 Add a task by dropping a module under `tasks/<name>/` with a failing test and
 a `PROMPT.md`.
 
+## Tier 2 — real bugs in esbuild (`repo/`)
+
+SWE-bench style, on [esbuild](https://github.com/evanw/esbuild) (~95k lines
+of Go). Cases are merged bug-fix commits that shipped a regression test,
+mined from history and mechanically validated (red at the parent commit with
+the test overlaid, green with the fix):
+
+```sh
+git clone --filter=blob:none https://github.com/evanw/esbuild /path/to/esbuild
+python3 repo/mine_cases.py /path/to/esbuild /tmp/gdbg-bench-esbuild 12
+python3 repo/run_repo.py   /path/to/esbuild /tmp/gdbg-bench-esbuild
+```
+
+The harness resets the worktree to the fix's parent, overlays only the
+test/snapshots, confirms red, runs the agent (without gdbg vs with it
+mandated), re-checks-out the overlay so test tampering can't fake a pass,
+and verifies. Results in `repo/runs.json`.
+
 ## Results
 
 See [FINDINGS.md](FINDINGS.md) for the numbers and how they compare to the
