@@ -1,0 +1,10 @@
+{"task": "accumulator", "condition": "strong", "idx": "0", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 121410, "wall_s": 21.3, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "1", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 121283, "wall_s": 18.5, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "2", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 122544, "wall_s": 20.9, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "3", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 120480, "wall_s": 23.7, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "4", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 122288, "wall_s": 24.2, "passed": true}
+{"task": "rpncalc", "condition": "strong", "idx": "0", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 149273, "wall_s": 27.4, "passed": true}
+{"task": "rpncalc", "condition": "strong", "idx": "1", "used_gdbg": true, "gdbg_calls": 1, "first_tool": "Bash", "tokens": 176399, "wall_s": 42.8, "passed": true}
+{"task": "rpncalc", "condition": "strong", "idx": "2", "used_gdbg": true, "gdbg_calls": 5, "first_tool": "Bash", "tokens": 396120, "wall_s": 62.5, "passed": true}
+{"task": "rpncalc", "condition": "strong", "idx": "3", "used_gdbg": true, "gdbg_calls": 8, "first_tool": "Bash", "tokens": 438508, "wall_s": 87.7, "passed": true}
+{"task": "rpncalc", "condition": "strong", "idx": "4", "used_gdbg": true, "gdbg_calls": 1, "first_tool": "Bash", "tokens": 204613, "wall_s": 37.2, "passed": true}
