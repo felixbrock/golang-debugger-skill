@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - run: go vet ./...
+      - run: go build ./cmd/gdbg
+      - run: go test ./...
+      - name: end-to-end smoke test
+        run: |
+          go install github.com/go-delve/delve/cmd/dlv@latest
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          cd examples/demo
+          ../../gdbg launch --pkg . --break main.go:18
+          ../../gdbg eval sum items[0].Qty
+          ../../gdbg step over
+          ../../gdbg continue
+          ../../gdbg trace --pkg . --break main.go:18 --capture sum,it.Qty
+          ../../gdbg down

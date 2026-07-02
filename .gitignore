@@ -1,0 +1,5 @@
+.gdbg/
+/gdbg
+__debug_bin*
+benchmarks/results-adopt/
+benchmarks/adopt/run_all.log
