@@ -229,6 +229,45 @@ never reached for rdbg and grep-fixed everything), with one upgrade: forced
 adoption now *works* and is approaching break-even exactly where reading is
 most expensive — without ever beating it.
 
+## Grounding analysis: is debugger data *better* data?
+
+If the debugger doesn't make agents more correct or cheaper, its remaining
+value proposition is epistemic: trajectories that contain *observed* runtime
+facts instead of confabulated ones — raw material for verification gates,
+knowledge bases, or training data. We scored all 49 transcripts (24 tier-2
+esbuild runs, 25 hermetic tier-1 runs) with an Opus judge
+(`grounding/judge.py`): grounded observations per run, unverified runtime
+claims, and — the crux — whether any debugger observation *causally
+determined* the diagnosis versus decorating a conclusion reached by reading
+("grounding theater"). Results (`grounding/results.jsonl`):
+
+- **Grounding density replicates.** On real esbuild bugs, debugger runs
+  carry 6.7 grounded observations/run (4.8 from the debugger) vs 2.6 for
+  read-only runs — 2.6× more observed fact, matching the Rust study's 3.2×
+  on toy crates.
+- **Theater dominates, but difficulty erodes it.** On toy tasks, forced
+  debugging is almost pure theater: 1/15 gate runs had a causal link (93%
+  theater) — nearly identical to the Rust rlenv's 1/6. On real esbuild
+  bugs it's 3/12 causal (75% theater) — a ~4× higher causal fraction. The
+  three causal cases were among the hardest, including the 6.2M-token
+  deep-dive, whose observations (e.g. `isTopLevel` true for both symbol
+  kinds after the first attempted fix) genuinely redirected the diagnosis —
+  retroactively justifying its cost.
+- **Confabulation is no longer the strong argument.** Opus 4.8 asserts few
+  unverified runtime claims anywhere (0.2–0.7/run); the debugger's effect
+  on it is marginal (0.2 vs 0.2 on real bugs). The Rust study's ~2
+  fabricated claims/run appears to have been partly a model-generation
+  issue.
+- **Friction scales with realism**: 2.2 failed debugger invocations/run in
+  esbuild vs 0.6 on toys.
+
+Implication for runtime-knowledge/RL pitches: the raw material is real and
+gets richer exactly where debugging is supposed to matter (causal fraction
+4× higher on real bugs), but an unfiltered harvest of forced-debugging
+trajectories would be 75–93% decorative. Any reward or data filter has to
+detect the observation→diagnosis link, not debugger usage — usage is
+trivially inducible (see the gate result) and mostly theater.
+
 ## Bottom line
 
 1. Passive availability still yields ~0% adoption, across languages and model
