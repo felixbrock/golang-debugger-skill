@@ -12,13 +12,16 @@ Turn runtime observation into durable, trainable knowledge, so that agents under
 - Whatever an agent learns at runtime is thrown away when the session ends — there is no persistence mechanism today.
 - Written knowledge bases are ignored: agents skip docs even when instructed to read them, mirroring the 0% passive-tool adoption.
 - The debugger's cost penalty shrinks monotonically as reading gets harder (1.3× on toy bugs → token parity and faster wall-clock on the hardest real esbuild bugs).
+- At 1.7M lines the crossover is real: the Rust study's contamination-isolated tsz benchmark measured −49%/−70% tokens on bugs that were expensive to read, +91% where reading was cheap, fix rates identical (3 cases, one run per arm).
+- Loud tool failure is load-bearing: the tsz win only existed after rdbg started reporting breakpoints that never fired — silent failures had made the debugger arm more expensive.
 - Current-generation models barely confabulate runtime behavior on these tasks (0.2–0.7 unverified claims/run, debugger or not) — the "models hallucinate what code does" argument is weakening with model progress.
 - When the truth isn't in any readable file (a cross-service contract bug, other service's source unavailable), agents switch to runtime observation on their own — 5/5 read-arm runs probed the live service unprompted, something that never happened in ~200 single-repo runs.
 - For contract bugs the cheapest correct observation is the service boundary (one curl showed the hidden field), not in-process debugging — the program had already discarded the evidence before a debugger could see it, and even debugger-mandated runs fell back to probing the wire.
 
 ## Assumptions
 
-- Beyond some system size/complexity (~tsz scale, 1.7M+ lines), reading stops working entirely and runtime observation becomes necessary (evidence: one 90%-cheaper anecdote, n=1).
+- Reading ever stops *working* (as opposed to getting expensive): even at 1.7M lines the read-only agent still fixed 3/3 — no scale yet observed where the debugger changes correctness rather than cost.
+- The tsz crossover generalizes: 3 cases, one run per arm, one repo, and conditional on bug type (traceable emit-site bugs win, missing-diagnostic bugs lose).
 - Enterprise pain concentrates in cross-service integration bugs that neither unit tests (which mock the other services) nor code reading can reach — plausible but untested; in our 2-service toy both arms fixed the bug 5/5.
 - Production traces can't substitute for debugging because they only cover code paths that were actually taken and don't allow exploratory execution.
 - The economic buyer cares enough about debugging/verification quality to fund infrastructure work (vs. accepting read-and-guess agents that already pass their tests).
