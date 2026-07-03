@@ -7,12 +7,13 @@ headless runs), Claude Code 2.1.198, `claude-opus-4-8`, medium effort, `gdbg`
 
 ## Both experiments, side by side
 
-Go (clean runs, isolated workdirs — see the contamination note below):
+Go (hermetic runs — pristine user config, isolated workdirs; see the
+methodology notes below):
 
 | bug | strong adoption | control adoption | strong tokens | control tokens | pass (both) |
 |---|---|---|---|---|---|
-| accumulator (easy) | 3/5 | 0/5 | 158k | 120k (**1.32× cheaper**) | 5/5 = 5/5 |
-| rpncalc (runtime-opaque) | 3/5 | 0/5 | 194k | 142k (**1.36× cheaper**) | 5/5 = 5/5 |
+| accumulator (easy) | 1/5 | 0/5 | 142k | 108k (**1.31× cheaper**) | 5/5 = 5/5 |
+| rpncalc (runtime-opaque) | 3/5 | 0/5 | 191k | 128k (**1.49× cheaper**) | 5/5 = 5/5 |
 
 The original Rust numbers, for reference:
 
@@ -126,10 +127,13 @@ each (`results-hard.jsonl`):
 
 | task | condition | adoption | mean calls | mean tokens | mean wall | passed |
 |---|---|---|---|---|---|---|
-| pipeline | control | 0/5 | 0 | 165k | 46s | **5/5** |
-| pipeline | gate | 5/5 | 5.2 | 351k (2.1×) | 84s | 5/5 |
-| panic_deep | control | 0/5 | 0 | 141k | 26s | **5/5** |
-| panic_deep | gate | 5/5 | 4.4 | 260k (1.8×) | 54s | 5/5 |
+| pipeline | control | 0/5 | 0 | 162k | 57s | **5/5** |
+| pipeline | gate | 5/5 | 3.2 | 297k (1.83×) | 90s | 5/5 |
+| panic_deep | control | 0/5 | 0 | 136k | 28s | **5/5** |
+| panic_deep | gate | 5/5 | 4.8 | 241k (1.77×) | 54s | 5/5 |
+
+(Hermetic numbers; the earlier host-config pass produced the same picture at
+slightly higher cost — 351k/260k gate means, `results-hard.jsonl`.)
 
 The read-loop did not crack. Control transcripts show the same shape every
 time: read all eight files once, edit the buggy line, run the test — no
@@ -139,7 +143,9 @@ panic two modules from its cause without ever running the code.
 
 So across four tasks spanning easy → runtime-opaque → multi-file-subtle →
 distant-cause-panic (60+ runs), the debugger never improved pass rate and
-always cost 1.3–2.1× tokens. At self-contained-module scale (≤ ~350 lines),
+always cost 1.3–1.8× tokens (hermetic; up to 2.1× under host config). Every
+tier-1 cell was subsequently reproduced hermetically — 45 clean-room runs,
+no conclusion changed. At self-contained-module scale (≤ ~350 lines),
 reading is saturated for this model; there is no bug-difficulty dial at this
 size that makes a debugger pay off. Where that leaves gdbg's value, in order
 of evidence: (1) grounding — debugger runs quote observed values instead of
