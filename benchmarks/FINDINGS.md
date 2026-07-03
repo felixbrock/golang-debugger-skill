@@ -172,6 +172,32 @@ Still no crossing — but the gap closed at the hard end:
   deep internals, expressions over real data structures, almost no failed
   commands.
 
+### Hardened rerun: the gap nearly closes under clean conditions
+
+The tsz method document (below) exposed two hygiene gaps in our first pass:
+4 of our 12 cases predate the model's training cutoff (the model may simply
+know those fixes), and our worktrees carried full git history, so the fix
+commits were technically reachable. We hardened the harness — every run now
+gets a fresh single-commit checkout (the fix is not in the object store,
+`git log/blame` reveal nothing) with WebSearch/WebFetch disabled — and reran
+the 8 post-cutoff cases, both arms (`runs-clean.json`):
+
+- read-only: **8/8 solved**, 984k mean tokens.
+- debugger required: **8/8 solved**, 1,223k mean — only **1.24×**, down from
+  1.94× on the same 8 cases in the leaky harness.
+- The debugger **won 2 of 8 cases outright on tokens**, including the
+  hardest (2.5M with vs 3.7M without — a 32% saving).
+- Both arms moved toward each other under hygiene: reading got more
+  expensive (775k → 984k on the same cases — the old runs may have been
+  mildly aided by reachable history), debugging got cheaper (1,501k →
+  1,223k).
+- Caveat: one run per case per arm, so case-level numbers are noisy; the
+  aggregate direction is what to trust.
+
+Correctness still never differentiated — but under a clean method the cost
+penalty at 95k lines is near break-even with individual wins, exactly the
+transition the tsz result (next) completes.
+
 ### External update: the crossover, located
 
 After we published these numbers, the Rust project ran the same style of

@@ -157,7 +157,7 @@ var launchSpec = map[string]bool{
 	"pkg": true, "test": true, "bin-path": true, "build-flags": true,
 	"break": true, "break-fn": true, "stop-entry": false,
 	// trace-only:
-	"capture": true, "max": true,
+	"capture": true, "max": true, "bt": true,
 }
 
 func launchMode(flags map[string][]string) (mode, target string, err error) {
@@ -259,15 +259,21 @@ func (d *Daemon) cmdTrace(args []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	locs := flags["break"]
+	locs := append(append([]string{}, flags["break"]...), flags["break-fn"]...)
 	if len(locs) == 0 {
-		return "", fmt.Errorf("trace needs --break <file:line>")
+		return "", fmt.Errorf("trace needs --break <file:line> or --break-fn <func>")
 	}
 	captures := splitList(first(flags, "capture"))
 	max := 30
 	if m := first(flags, "max"); m != "" {
 		if max, err = strconv.Atoi(m); err != nil {
 			return "", fmt.Errorf("--max: %w", err)
+		}
+	}
+	btDepth := 0
+	if v := first(flags, "bt"); v != "" {
+		if btDepth, err = strconv.Atoi(v); err != nil {
+			return "", fmt.Errorf("--bt: %w", err)
 		}
 	}
 	mode, target, err := launchMode(flags)
@@ -327,6 +333,9 @@ func (d *Daemon) cmdTrace(args []string) (string, error) {
 			row += fmt.Sprintf("  %s=%s", cap, inlineVar(*v, 60))
 		}
 		b.WriteString(row + "\n")
+		if btDepth > 0 {
+			b.WriteString(traceBacktrace(s, btDepth))
+		}
 	}
 	s.exited = true // trace runs the program to completion (or max hits)
 	suffix := ""
@@ -339,6 +348,34 @@ func (d *Daemon) cmdTrace(args []string) (string, error) {
 	}
 	writeOutput(&b, s.proc.NewOutput())
 	return fmt.Sprintf("trace: %d hit(s)%s\n%s", hits, suffix, strings.TrimRight(b.String(), "\n")), nil
+}
+
+// traceBacktrace renders a compact caller chain under a trace row, so a
+// sink-trap trace shows WHO produced each hit (the fingerprint-trace recipe:
+// break where the wrong artifact surfaces, walk back to the deciding code).
+func traceBacktrace(s *Session, depth int) string {
+	frames, err := s.c.Stacktrace(-1, depth, nil)
+	if err != nil {
+		return ""
+	}
+	var parts []string
+	for i, fr := range frames {
+		if i == 0 {
+			continue // the hit location is already on the row above
+		}
+		name := "?"
+		if fr.Function != nil {
+			name = fr.Function.Name
+		}
+		if strings.HasPrefix(name, "runtime.") {
+			break
+		}
+		parts = append(parts, fmt.Sprintf("%s (%s:%d)", name, filepath.Base(fr.File), fr.Line))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return "      ↳ " + strings.Join(parts, " ← ") + "\n"
 }
 
 func splitList(s string) []string {

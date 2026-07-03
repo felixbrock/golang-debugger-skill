@@ -12,7 +12,8 @@
     "codelines": 2,
     "pkgs": [
       "./internal/js_parser/"
-    ]
+    ],
+    "date": "2026-06-11"
   },
   {
     "sha": "308ad745d824c77bc607603451b257d0f2fd9a38",
@@ -29,7 +30,8 @@
     "codelines": 12,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2026-06-09"
   },
   {
     "sha": "2b6452b5be871c8c2350ee0466dbbb1cdce11e8c",
@@ -47,7 +49,8 @@
     "pkgs": [
       "./internal/bundler_tests/",
       "./internal/js_parser/"
-    ]
+    ],
+    "date": "2026-06-08"
   },
   {
     "sha": "e0755b46922195b1b340e3d6f84d11eb7c10a3b6",
@@ -66,7 +69,8 @@
     "pkgs": [
       "./internal/bundler_tests/",
       "./internal/js_parser/"
-    ]
+    ],
+    "date": "2026-06-08"
   },
   {
     "sha": "64ee0ea63b2ff303caafc9610c388dc72c882c23",
@@ -82,7 +86,8 @@
     "codelines": 5,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2026-04-02"
   },
   {
     "sha": "8b829b1bdfeb2b11aa16a643b5bfee108066cab0",
@@ -98,7 +103,8 @@
     "codelines": 11,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2026-03-10"
   },
   {
     "sha": "4384badefe3a07b80b3f3eba832c17d0c806dd4c",
@@ -113,7 +119,8 @@
     "codelines": 6,
     "pkgs": [
       "./internal/css_parser/"
-    ]
+    ],
+    "date": "2026-03-10"
   },
   {
     "sha": "b791ac3881fb4efc31e5e15c846ef804656c6f80",
@@ -128,7 +135,8 @@
     "codelines": 4,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2026-02-05"
   },
   {
     "sha": "c8d93a7081e0e581b04e861674a8b2fec089fe74",
@@ -143,7 +151,8 @@
     "codelines": 7,
     "pkgs": [
       "./internal/css_parser/"
-    ]
+    ],
+    "date": "2025-12-16"
   },
   {
     "sha": "6f8ec15b15e70ff29a1966bf7b3bd24f8d6a0f5a",
@@ -159,7 +168,8 @@
     "codelines": 6,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2025-12-16"
   },
   {
     "sha": "4e4e177bf252829472fc827aa421554cf436b40a",
@@ -176,7 +186,8 @@
     "codelines": 14,
     "pkgs": [
       "./internal/js_parser/"
-    ]
+    ],
+    "date": "2025-12-03"
   },
   {
     "sha": "d3c67f9e94267d06337d2e2e0d837844d2cac6bd",
@@ -192,6 +203,7 @@
     "codelines": 38,
     "pkgs": [
       "./internal/bundler_tests/"
-    ]
+    ],
+    "date": "2025-11-01"
   }
 ]

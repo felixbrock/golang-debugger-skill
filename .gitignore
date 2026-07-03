@@ -8,3 +8,6 @@ __pycache__/
 benchmarks/integration/task/bin/
 tmp_msg.md
 .rdbg/
+tmp_msg.md
+benchmarks/repo/run_clean.log
+benchmarks/repo/runs-pilot.json

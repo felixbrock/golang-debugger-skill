@@ -33,10 +33,13 @@ runs through every hit and returns a table in one call:
 
 ```
 gdbg trace --pkg . --break main.go:42 --capture i,sum --max 30
+gdbg trace --test . --break-fn pkg.emitError --capture msg --bt 5 -- -run TestX
 ```
 
-Same `--test`/`--pkg` flags as `launch`. If you catch yourself repeating
-`eval` + `continue` at one breakpoint, that whole loop is a single `trace`.
+Same `--test`/`--pkg` flags as `launch`; `--break-fn` traps a function,
+`--bt N` prints the caller chain at every hit. If you catch yourself
+repeating `eval` + `continue` at one breakpoint, that whole loop is a single
+`trace`.
 
 ## Breakpoints
 
@@ -98,6 +101,13 @@ Several commands in one call: `gdbg do "vars; step over; vars"`.
 
 ## Common loops
 
+- **Wrong or extra output (sink trap).** Trace the function that *emits* the
+  wrong artifact with `--bt`: `gdbg trace --test . --break-fn pkg.emit
+  --capture <args> --bt 5 -- -run TestX` — each hit shows the value and the
+  caller chain that decided it; fix the deciding caller, not the sink.
+- **Missing output.** Trap the sink the same way: if gdbg reports the
+  breakpoint was NEVER HIT, the decision happened upstream — breakpoint the
+  guards that should have called it and read their inputs.
 - **Wrong value.** Break where it is computed, `vars`/`eval` to see the real
   inputs, `step` to watch it go wrong, `set` to test a fix without recompiling.
 - **Panic.** `launch`, `continue` — you land on the raising frame with its
