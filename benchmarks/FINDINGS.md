@@ -32,15 +32,19 @@ The original Rust numbers, for reference:
   in clean runs (adopting runs needed 1–2 gdbg calls) and partly because the
   current model uses the debugger surgically rather than exhaustively.
 
-## What changed: mandates are now advisory, artifacts are not
+## Mandates are advisory, artifacts are not
 
 The bare "MANDATORY, observe with the debugger before editing" `CLAUDE.md`
 that flipped Rust adoption to 5/5 only achieved **3/5** here, on both tasks —
-the current Opus treats it as advisory and sometimes decides reading is
-enough ("The bug is clear from the source"), at control-level cost.
+Opus sometimes treats it as advisory and decides reading is enough ("The bug
+is clear from the source"), at control-level cost. Both studies used the
+same model: the Rust repo's committed results (2026-07-02) show
+`claude-opus-4-8` and its harness passes `--model opus --effort medium`,
+identical to ours — so 5/5 vs 3/5 is within n=5 noise (and possibly
+language/tooling texture), not model drift.
 
 A follow-up on the easy bug (5 runs per condition, `results-followup.jsonl`)
-shows adoption is still fully controllable — the bar just moved:
+shows what reliably controls adoption:
 
 | condition | where the mandate lives | adoption | mean tokens |
 |---|---|---|---|
@@ -55,8 +59,8 @@ edit, because read-only fixes have shipped confabulated root causes*. Every
 gate run complied — several noted "the bug is visible on reading, but the
 policy requires runtime observation" and quoted a `gdbg trace` table showing
 the odd elements being appended. Checkable artifact requirements and
-user-turn instructions flip adoption; bare workflow prescriptions no longer
-do.
+user-turn instructions flip adoption reliably; bare workflow prescriptions
+only sometimes do.
 
 ## Methodology hazard: nested agents inherit the host project's context
 
@@ -173,9 +177,10 @@ most expensive — without ever beating it.
 
 1. Passive availability still yields ~0% adoption, across languages and model
    versions.
-2. Prompting still controls adoption, but the mechanism changed: this model
-   generation overrides bare workflow mandates it judges inefficient (3/5),
-   while verifiable-artifact gates and user-turn requirements reach 5/5.
+2. Prompting controls adoption, with a gradient: bare workflow mandates get
+   partial compliance (3–5/5 across the Go and Rust studies, same model),
+   while verifiable-artifact gates and user-turn requirements reach 5/5
+   reliably.
 3. Forced adoption still never beat reading on token cost at this task scale
    (best case ~1.3×, all cells 5/5 correct). The case for gdbg remains
    conditional: panics with unclear cause, state only visible at runtime,
