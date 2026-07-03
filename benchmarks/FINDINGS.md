@@ -1,283 +1,227 @@
-# What the adoption benchmarks showed (Go replication)
+# What the benchmarks showed
 
-A replication of the rust-debugger-skill adoption experiment, run 2026-07-02:
-same protocol (two planted-bug tasks × strong-vs-control `CLAUDE.md` × 5
-headless runs), Claude Code 2.1.198, `claude-opus-4-8`, medium effort, `gdbg`
-+ Delve 1.27 on Go 1.26.
+We gave Claude (Opus 4.8, via Claude Code) a Go project with a bug and a
+failing test, said "fix it", and repeated that many times under different
+conditions — measuring whether it used the debugger, what the run cost in
+tokens, and whether the test passed afterward. This replicates the
+[rust-debugger-skill](https://github.com/mohsen1/rust-debugger-skill)
+experiments (which used the same model) and then extends them. Plain-language
+definitions of every term are in [README.md](README.md#terminology).
+
+Roughly 200 runs total, across ~2026-07-02/03, with gdbg + Delve 1.27 on
+Go 1.26.
+
+## The headline result
+
+**The agent never needed the debugger.** It fixed every bug in every
+condition — small planted bugs, hard multi-file bugs, and 12 real historical
+esbuild bugs — by reading the code. Using the debugger never improved
+correctness and always cost more tokens (1.3–1.8× on clean measurements).
+The extra cost shrinks as bugs get harder to read, reaching roughly
+break-even on the hardest real bugs, but it never became a saving.
 
 ## Both experiments, side by side
 
-Go (hermetic runs — pristine user config, isolated workdirs; see the
-methodology notes below):
+Small planted-bug tasks, 5 runs per condition. "Mandate" is a CLAUDE.md
+ordering the agent to use the debugger; "note" just mentions it exists.
+Go numbers come from clean runs (fresh config, isolated work folders — see
+the contamination section for why that matters).
 
-| bug | strong adoption | control adoption | strong tokens | control tokens | pass (both) |
-|---|---|---|---|---|---|
-| accumulator (easy) | 1/5 | 0/5 | 142k | 108k (**1.31× cheaper**) | 5/5 = 5/5 |
-| rpncalc (runtime-opaque) | 3/5 | 0/5 | 191k | 128k (**1.49× cheaper**) | 5/5 = 5/5 |
+- **accumulator (easy bug, visible in the source)**
+  - Go: mandate followed 1/5, note 0/5 — debugger runs 142k tokens vs 108k
+    read-only (reading 1.31× cheaper); all passed.
+  - Rust: mandate followed 5/5, note 0/5 — 386k vs 135k (reading 2.85×
+    cheaper); all passed.
+- **rpncalc (bug invisible in the output — swapped operands)**
+  - Go: mandate followed 3/5, note 0/5 — 191k vs 128k (reading 1.49×
+    cheaper); all passed.
+  - Rust: mandate followed 4/5, note 0/5 — 278k vs 153k (reading 1.82×
+    cheaper); all passed.
 
-The original Rust numbers, for reference:
+## What replicated from the Rust study
 
-| bug | strong adoption | control adoption | strong tokens | control tokens | pass (both) |
-|---|---|---|---|---|---|
-| accumulator (easy) | 5/5 | 0/5 | 386k | 135k (**2.85× cheaper**) | 5/5 = 5/5 |
-| rpncalc (runtime-opaque) | 4/5 | 0/5 | 278k | 153k (**1.82× cheaper**) | 5/5 = 5/5 |
+- **Just making the debugger available does nothing.** With only a "this
+  exists" note, the agent used it in 0 of 20 Go runs and 0 of 10 Rust runs.
+- **Using the debugger never helped correctness.** Every run passed in both
+  studies; forcing the debugger only added cost.
 
-## What replicated
+## Orders don't work reliably — asking for proof does
 
-- **Availability alone yields zero use.** Control adoption was 0/10 across
-  both tasks — identical to Rust. A passive "skill available" note does
-  nothing.
-- **Adoption ≠ benefit.** Every cell passed 5/5; the debugger never paid for
-  itself in tokens on bugs this size. The penalty is much smaller than in the
-  Rust runs (~1.35× vs 1.8–2.9×), partly because Delve/gdbg friction was low
-  in clean runs (adopting runs needed 1–2 gdbg calls) and partly because the
-  current model uses the debugger surgically rather than exhaustively.
+The bossy CLAUDE.md that got 5/5 compliance in the Rust study only got 3/5
+here at first, and probing why became the most useful part of the study.
+Both studies used the same model, so we tested everything else. A follow-up
+on the easy bug, 5 runs per condition:
 
-## Mandates are advisory, artifacts are not — and ambient context is a confound
+- **strong** (an order: "MANDATORY — use the debugger before editing"):
+  followed 3/5, 158k mean tokens. The agent often decides "the bug is clear
+  from the source" and just ignores the order.
+- **gate** (a checkable requirement with a reason: "your fix is rejected
+  unless you quote runtime values you actually observed before your first
+  edit, because read-only fixes have shipped wrong root causes"):
+  followed **5/5**, 249k.
+- **prompt** (the same requirement written into the task message instead of
+  CLAUDE.md): followed **5/5**, 284k.
+- **control** (a one-line note): 0/5, 120k.
 
-The bare "MANDATORY, observe with the debugger before editing" `CLAUDE.md`
-that flipped Rust adoption to 5/5 achieved 3/5 here — and probing WHY led to
-the sharpest result of the adoption study. Both studies used the same model
-(the Rust repo's committed results show `claude-opus-4-8`, `--model opus
---effort medium`, identical to ours), so we tested the remaining variable:
-the **host machine's user-level Claude config** (global CLAUDE.md, personal
-skills, plugins, MCP servers), which loads into every nested benchmark run.
-Re-running cells hermetically (`CLAUDE_CONFIG_DIR` pointed at a pristine
-config; `GDBG_HERMETIC` in the harness) as well as under the host config
-(`results-followup.jsonl`, `results-hermetic.jsonl`):
+The difference between "strong" and "gate" is that the gate demands something
+checkable — quoted evidence — and explains why. Orders without a check get
+second-guessed; proof requirements don't.
 
-| condition | ambient context | adoption | mean tokens |
-|---|---|---|---|
-| control | hermetic | 0/5 | 108k |
-| control | host personal config | 0/5 | 120k |
-| strong | hermetic | **1/5** | 142k |
-| strong | host personal config | **3/5** | 158k |
-| strong | host config + stale session memory | **0/5** | 122k |
-| gate | hermetic | **5/5** | 165k |
-| gate | host personal config | **5/5** | 249k |
-| *strong, Rust task (their machine)* | *unknown host config* | *5/5* | *386k* |
-| *strong, Rust task (our machine)* | *hermetic* | ***4/5*** | *187k* |
+### The environment quietly changes the results
 
-Three regimes, cleanly separated:
+We then discovered that every benchmark run had been silently inheriting
+things from the host machine: the user's global Claude config, personal
+skills, plugins — and, because work folders originally lived inside this
+repo, even this project's session memory. Re-running with a completely fresh
+config ("clean" below) against the earlier runs:
 
-- **Passive notes are robustly 0/5** in every environment, both studies.
-- **Bare workflow mandates are unstable**: 0/5, 1/5, 3/5, 5/5 across
-  ambient-context variations of the *same* prompt on the *same* model. The
-  Rust study's 5/5 is best read as one more draw from this noisy
-  distribution on one more uncontrolled machine — not a property of the
-  language or the model.
-- **Artifact-gates are robustly 5/5** everywhere — including the clean
-  room, where they are also cheapest (165k, only 1.53× the hermetic
-  control; the host config had inflated gate runs to 249k and 3–6 gdbg
-  calls vs 1–2 hermetic).
+- note: 0/5 clean, 0/5 with host config — stable.
+- order (strong): **1/5 clean**, 3/5 with host config, 0/5 when stale memory
+  leaked in — unstable, swung by ambient context.
+- proof requirement (gate): **5/5 clean and 5/5 with host config** — stable,
+  and cheapest when clean (165k, only 1.53× the read-only baseline).
+- The host config also added ~11% tokens to every single run (its skills and
+  plugins ride along in the system prompt).
+- The Rust study's 5/5 for the order ran on its author's machine with its
+  own uncontrolled config — best read as another draw from a noisy setup.
 
-The host config also taxes everything uniformly: hermetic control runs cost
-108k vs 120k under the personal config (~11% of every measurement was the
-host's skills/plugins/MCP being carried in the system prompt). Ratios
-within a study survive this; absolute token comparisons across machines do
-not.
+### The language matters too
 
-### Cross-language control: the mandate is not technology-independent
+To separate "language" from "machine", we ran the Rust study's own harness
+and task on our machine with the fresh config (Rust toolchain + lldb
+installed locally, rdbg built from their repo):
 
-To separate language from machine, we ran the **Rust study's own harness and
-accumulator task on our machine, hermetically** (rustup + rust-analyzer +
-lldb-dap installed locally, rdbg built from their repo, pristine
-`CLAUDE_CONFIG_DIR`; raw data in `results-rust-hermetic.jsonl`). Everything
-equal except the language and debugger:
-
-- Go strong, hermetic, this machine: **1/5** adoption (142k mean tokens)
-- Rust strong, hermetic, this machine: **4/5** adoption (187k)
-- Rust strong, their machine, their config: 5/5 (386k)
-- Controls: 0/5 in all three settings; every run passed everywhere.
+- Go order, clean, this machine: followed 1/5 (142k tokens).
+- Rust order, clean, this machine: followed **4/5** (187k).
+- Rust order, their machine, their config: 5/5 (386k).
+- Notes: 0/5 everywhere; every run passed everywhere.
 
 Same model, same machine, same clean config, same prompt structure,
-near-identical planted bug — and the agent reaches for the debugger 4× more
-often in Rust. Pooled across environments the pattern holds (Rust strong
-9/10 vs Go strong 4/10). With n=5 cells this is suggestive rather than
-conclusive, but the direction is consistent: **the "reading is enough"
-override that neuters bare mandates fires more often in Go than in Rust** —
-plausibly because the model trusts its Go reading more. Adoption is a
-three-way function of instructions, ambient environment, *and* language;
-only the verifiable-artifact gate has been immune to all of them.
+near-identical bug — and the agent obeys the order 4× more often in Rust.
+The likely reason: the model trusts its ability to read Go more, so it skips
+the debugger more. (Cells are only 5 runs, so treat this as a strong hint,
+not proof.) The clean Rust runs also show what the author's machine had
+added: 2–3 debugger calls at ~187k tokens clean, versus 6–9 calls at ~386k
+in the original — ambient context roughly doubled the cost of debugging.
 
-The clean-room Rust runs also isolate what their host config had added:
-adopting runs there needed 2–3 rdbg calls at ~187k tokens versus 6–9 calls
-at ~386k in the original study — ambient context roughly doubled the
-debugging cost, mirroring (at larger scale) the gate-run inflation we
-measured on our own machine.
+So compliance with a plain order depends on the instructions, the ambient
+environment, *and* the language. Only the proof requirement was immune to
+all three.
 
-The gate variant phrases the policy as a review gate with a reason: *fixes
-are rejected unless the reply quotes runtime values observed before the
-first edit, because read-only fixes have shipped confabulated root causes*.
-Every gate run complied — several noted "the bug is visible on reading, but
-the policy requires runtime observation" and quoted a `gdbg trace` table
-showing the odd elements being appended.
+## Warning for anyone benchmarking agents this way
 
-## Methodology hazard: nested agents inherit the host project's context
+Nested `claude -p` runs inherit whatever the host machine has configured. In
+the first pass of this experiment (work folders inside the repo), leaked
+session memory both *caused* failures (an agent exported a stale toolchain
+setting it read from memory, and the debugger refused to start — two runs
+burned 396k/439k tokens recovering) and *suppressed* debugger use elsewhere
+(a memory describing debugger failures scared agents off: 0/5 vs 3/5 clean).
+The harness now keeps work folders under `/tmp` and supports a fresh config
+via `GDBG_HERMETIC`; contaminated rows are archived in
+`results-contaminated.jsonl`. If you benchmark agents with Claude Code:
+isolate the work folders and the config, or your own settings and memory
+become invisible variables.
 
-The first pass of this experiment put benchmark workdirs **inside this
-repo**. Nested `claude -p` runs then resolved the repo as their project root
-and inherited its session memory — which at the time described a (stale)
-`GOTOOLCHAIN` workaround and gdbg daemon failure modes. That contaminated
-the runs in both directions:
+One real fix came out of this: the gdbg daemon used to keep the environment
+of whichever client started it, so one bad environment poisoned every later
+launch. `launch`/`trace` now use the requesting client's environment.
 
-- Two strong runs exported the stale `GOTOOLCHAIN` pin, dlv refused to
-  start, and the runs burned 396k/439k tokens on recovery (inflating the
-  strong mean to 273k, reported here originally as 1.92×).
-- The failure-describing memory *suppressed* adoption elsewhere: the
-  contaminated accumulator strong cell measured 0/5; re-run with isolated
-  workdirs it is 3/5.
+## Harder bugs: can the debugger win?
 
-The harness now creates workdirs under `/tmp/gdbg-bench-results` (no repo
-ancestor), and the contaminated rows are archived in
-`results-contaminated.jsonl`. If you replicate agent benchmarks with Claude
-Code: isolate workdirs from any real project root, or your CLAUDE.md,
-settings, and memory become uncontrolled variables.
+All the cells above passed everything, so they only measured cost. We built
+two tasks designed so reading should struggle, and ran read-only vs
+debugger-required, 5 runs each (clean config):
 
-The friction episode did yield a real fix: the gdbg daemon used to keep the
-environment of whichever client spawned it, so one bad env poisoned every
-later launch. `launch`/`trace` now use the requesting client's environment.
+- **pipeline** — a 6-stage log pipeline (~350 lines, 8 files); the bug is
+  one reversed comparison at a window boundary, and the test fails on an
+  end-of-pipeline number that points at nothing.
+  - read-only: **5/5 passed**, 162k tokens, 57s.
+  - debugger required: 5/5 passed, 297k (1.83×), 90s.
+- **panic_deep** — a module that crashes two files away from the actual
+  mistake (an index recorded off by one at build time).
+  - read-only: **5/5 passed**, 136k tokens, 28s.
+  - debugger required: 5/5 passed, 241k (1.77×), 54s.
 
-## The performance experiment: can the debugger *win*?
+Reading did not crack. The read-only transcripts all look the same: read the
+eight files once, edit the buggy line, run the test — no print statements,
+no second attempt. At this size (up to ~350 lines) there is no bug subtle
+enough to make the debugger pay off for this model.
 
-Every cell above passed 5/5, so the earlier experiments only ever measured
-overhead. Two harder tasks were built specifically so reading should
-struggle, then run with-debugger (gate) vs pure read-loop (control), 5 runs
-each (`results-hard.jsonl`):
+## Real bugs in a real codebase (esbuild, 95k lines)
 
-- **pipeline** — a 6-stage log-analytics pipeline (~350 lines, 8 files); the
-  bug is one reversed comparison at a window boundary (`w.End >= ev.TS` for
-  `ev.TS < w.End`), and the test fails on an end-to-end aggregate that points
-  at nothing (`{Windows:4 … Score:4}` vs `{Windows:6 … Score:3}`).
-- **panic_deep** — an order-fulfillment module that panics
-  (`index out of range [8] with length 8`) two files away from the cause: a
-  branch in `Catalog.Add` records the index *after* appending, so backordered
-  items are off by one (and silently resolve to the wrong item when not
-  last).
+The last place a saving was plausible: bugs whose codebase is too large to
+just read. We mined 12 real, merged esbuild bug fixes (each ships a
+regression test; each was mechanically checked to fail before the fix and
+pass with it), rewound the repo to just before each fix, and asked the agent
+to rediscover it — with and without the debugger. Tampering with the test
+can't fake a pass (the test files are restored before checking).
 
-| task | condition | adoption | mean calls | mean tokens | mean wall | passed |
-|---|---|---|---|---|---|---|
-| pipeline | control | 0/5 | 0 | 162k | 57s | **5/5** |
-| pipeline | gate | 5/5 | 3.2 | 297k (1.83×) | 90s | 5/5 |
-| panic_deep | control | 0/5 | 0 | 136k | 28s | **5/5** |
-| panic_deep | gate | 5/5 | 4.8 | 241k (1.77×) | 54s | 5/5 |
+- read-only: **12/12 solved**, 708k mean tokens (419k median), 173s mean.
+- debugger required: **12/12 solved**, 1,280k mean (1.8×), 707k median, 227s.
 
-(Hermetic numbers; the earlier host-config pass produced the same picture at
-slightly higher cost — 351k/260k gate means, `results-hard.jsonl`.)
+Still no crossing — but the gap closed at the hard end:
 
-The read-loop did not crack. Control transcripts show the same shape every
-time: read all eight files once, edit the buggy line, run the test — no
-print statements, no second iteration, no wrong turns. Opus 4.8 spot-reads a
-one-character boundary bug in 350 unfamiliar lines reliably, and resolves a
-panic two modules from its cause without ever running the code.
+- On the two bugs where *reading itself* was most expensive (~2M tokens),
+  the debugger arm matched the token cost and was clearly faster (280s vs
+  472s wall time on one; 213s vs 270s on the other).
+- The debugger-arm average is dragged up by one 6.2M-token run — not tool
+  failure (1 error in 24 calls) but a genuinely long investigation with
+  conditional breakpoints deep in the renamer. Excluding that case from both
+  arms: 608k vs 829k (1.36×).
+- gdbg held up operationally in a real compiler codebase: breakpoints in
+  deep internals, expressions over real data structures, almost no failed
+  commands.
 
-So across four tasks spanning easy → runtime-opaque → multi-file-subtle →
-distant-cause-panic (60+ runs), the debugger never improved pass rate and
-always cost 1.3–1.8× tokens (hermetic; up to 2.1× under host config). Every
-tier-1 cell was subsequently reproduced hermetically — 45 clean-room runs,
-no conclusion changed. At self-contained-module scale (≤ ~350 lines),
-reading is saturated for this model; there is no bug-difficulty dial at this
-size that makes a debugger pay off. Where that leaves gdbg's value, in order
-of evidence: (1) grounding — debugger runs quote observed values instead of
-asserting simulated ones (the Rust grounding analysis found 3× more grounded
-observations, and our gate transcripts match); (2) codebases too large or
-expensive to read, where one paused inspection replaces many
-build-and-print cycles — untested here, needs a tier-2 style harness on a
-real repo; (3) failure modes reading can't reach in principle: state that
-exists only under load, concurrency interleavings, external inputs; (4)
-interactive use by humans.
-
-## Tier 2: real bugs in a real codebase (esbuild, 95k LOC)
-
-The last regime where a token win was plausible: bugs whose surrounding
-codebase is too large to just read. 12 real, merged esbuild bug fixes
-(mined from history: `fix #NNNN` commits shipping a regression test plus a
-≤60-line source fix, each mechanically validated red-at-parent /
-green-with-fix — `repo/cases.json`). Per case the harness resets a worktree
-to the fix's parent, overlays only the test/snapshots, confirms red, and
-runs the agent to re-derive the fix; the overlay is re-checked-out before
-verification so tampering with tests can't fake a pass. Conditions: pure
-agent (`without`) vs gdbg mandated via the artifact-gate prompt (`with`) —
-availability notes yield ~0% adoption, and this measures benefit-when-used.
-
-| | without | with |
-|---|---|---|
-| solved | **12/12** | **12/12** |
-| mean tokens | 708k | 1,280k (1.81×) |
-| median tokens | 419k | 707k (1.69×) |
-| mean wall | 173s | 227s |
-| mean gdbg calls | 0 | 7.1 |
-
-Still no crossing — but the texture changed:
-
-- On the two cases where reading was most expensive (`e0755b46` parens for
-  `new` expressions, 2.0M tokens without; `2b6452b5` `import =` under
-  `es5`), the debugger arm reached **token parity and clearly better wall
-  time** (280s vs 472s; 213s vs 270s). First sightings of the gap actually
-  closing on individual bugs.
-- The with-arm mean is dominated by one 6.2M-token run (`308ad745`, nested
-  `var` renaming) — not tool friction (1 error in 24 gdbg calls) but a
-  genuinely long session of conditional breakpoints and symbol-table evals.
-  Excluding that case from both arms: 608k vs 829k (1.36×).
-- gdbg held up operationally in a 95k-line codebase: agents set breakpoints
-  in deep internals (`internal/renamer`), evaluated indexed expressions into
-  real data structures, and traced across packages, with essentially no CLI
-  friction.
-
-This mirrors the Rust tier-2 experience (on a 1.7M-line repo the agent
-never reached for rdbg and grep-fixed everything), with one upgrade: forced
-adoption now *works* and is approaching break-even exactly where reading is
-most expensive — without ever beating it.
-
-## Grounding analysis: is debugger data *better* data?
+## Is debugger data *better* data? (the grounding analysis)
 
 If the debugger doesn't make agents more correct or cheaper, its remaining
-value proposition is epistemic: trajectories that contain *observed* runtime
-facts instead of confabulated ones — raw material for verification gates,
-knowledge bases, or training data. We scored all 49 transcripts (24 tier-2
-esbuild runs, 25 hermetic tier-1 runs) with an Opus judge
-(`grounding/judge.py`): grounded observations per run, unverified runtime
-claims, and — the crux — whether any debugger observation *causally
-determined* the diagnosis versus decorating a conclusion reached by reading
-("grounding theater"). Results (`grounding/results.jsonl`):
+value is that debugger runs contain *observed facts* instead of guesses —
+potentially useful as evidence, as a knowledge base, or as training data. We
+had a judge model score all 49 transcripts: how many runtime facts were
+actually observed, how many runtime claims were asserted without evidence,
+and — the key question — whether any debugger observation actually *changed
+or determined* the diagnosis, versus the agent deciding by reading and then
+running the debugger for show (we call that "theater": the answer was
+written down first, the working-out performed afterwards).
 
-- **Grounding density replicates.** On real esbuild bugs, debugger runs
-  carry 6.7 grounded observations/run (4.8 from the debugger) vs 2.6 for
-  read-only runs — 2.6× more observed fact, matching the Rust study's 3.2×
-  on toy crates.
-- **Theater dominates, but difficulty erodes it.** On toy tasks, forced
-  debugging is almost pure theater: 1/15 gate runs had a causal link (93%
-  theater) — nearly identical to the Rust rlenv's 1/6. On real esbuild
-  bugs it's 3/12 causal (75% theater) — a ~4× higher causal fraction. The
-  three causal cases were among the hardest, including the 6.2M-token
-  deep-dive, whose observations (e.g. `isTopLevel` true for both symbol
-  kinds after the first attempted fix) genuinely redirected the diagnosis —
-  retroactively justifying its cost.
-- **Confabulation is no longer the strong argument.** Opus 4.8 asserts few
-  unverified runtime claims anywhere (0.2–0.7/run); the debugger's effect
-  on it is marginal (0.2 vs 0.2 on real bugs). The Rust study's ~2
-  fabricated claims/run appears to have been partly a model-generation
-  issue.
-- **Friction scales with realism**: 2.2 failed debugger invocations/run in
-  esbuild vs 0.6 on toys.
+- **Debugger runs do contain more real observations.** On real esbuild
+  bugs: 6.7 observed facts per run (4.8 from the debugger) vs 2.6 for
+  read-only runs — 2.6× more. Matches the Rust study's 3.2×.
+- **But most debugger use is theater.** On the small tasks, only 1 of 15
+  forced-debugger runs had an observation that actually drove the fix (93%
+  theater) — almost exactly the Rust project's own measurement (1/6). On
+  real esbuild bugs it improves to 3 of 12 (75% theater).
+- **The genuine cases cluster at the hard end.** The three real-bug runs
+  where observation drove the diagnosis were among the hardest — including
+  the 6.2M-token investigation, where seeing an unexpected value redirected
+  a wrong diagnosis. Difficulty makes debugger evidence real.
+- **"Models hallucinate runtime behavior" is fading as an argument.** This
+  model asserts very few unverified runtime claims anywhere (0.2–0.7 per
+  run), debugger or not. The Rust study's ~2 fabricated claims per run looks
+  partly like an older-model problem.
+- Failed debugger commands rise with realism: 2.2 per run in esbuild vs 0.6
+  on toys.
 
-Implication for runtime-knowledge/RL pitches: the raw material is real and
-gets richer exactly where debugging is supposed to matter (causal fraction
-4× higher on real bugs), but an unfiltered harvest of forced-debugging
-trajectories would be 75–93% decorative. Any reward or data filter has to
-detect the observation→diagnosis link, not debugger usage — usage is
-trivially inducible (see the gate result) and mostly theater.
+Implication for "harvest debugger sessions as training data": getting agents
+to *use* the debugger is trivial (the proof requirement gets 100%), but an
+unfiltered harvest would be 75–93% theater. The hard and valuable part is
+detecting whether an observation actually informed the conclusion —
+`grounding/judge.py` is a first prototype of that filter.
 
 ## Bottom line
 
-1. Passive availability still yields ~0% adoption, across languages and model
-   versions.
-2. Prompting controls adoption, with a gradient: bare workflow mandates are
-   unstable — sensitive to ambient context (0–5/5 across environments on the
-   same model and prompt) *and to language* (Rust 4/5 vs Go 1/5 on the same
-   machine, hermetic) — while verifiable-artifact gates reach 5/5 in every
-   environment tested, including a hermetic one.
-3. Forced adoption still never beat reading on token cost at this task scale
-   (best case ~1.3×, all cells 5/5 correct). The case for gdbg remains
-   conditional: panics with unclear cause, state only visible at runtime,
-   codebases too large to read — plus interactive/confirmation use.
+1. A passive "this tool exists" note gets ~0% use, in every language and
+   environment tested.
+2. Compliance with a plain order is unreliable — it swings with the ambient
+   machine setup and with the programming language. A checkable proof
+   requirement ("quote what you observed") gets 100% compliance everywhere,
+   at ~1.5× cost.
+3. For fixing bugs, the debugger never beat reading at any scale we could
+   test (up to a real 95k-line codebase) — costs converge toward break-even
+   on the hardest bugs but never cross.
+4. The debugger's real, measured value is evidence quality: runs contain
+   ~3× more observed fact. But most forced observation is decorative; on
+   real bugs only ~25% of sessions produced an observation that genuinely
+   drove the fix. Anything built on debugger data — verification gates,
+   knowledge bases, RL training — stands or falls on filtering the genuine
+   sessions from the theater.
