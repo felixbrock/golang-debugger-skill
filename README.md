@@ -131,6 +131,12 @@ the program stays paused between an agent's tool calls. gdbg speaks Delve's
 native JSON-RPC API directly (stdlib only — the module has zero dependencies).
 Logs live in `.gdbg/` — add it to `.gitignore`.
 
+The daemon also records every command it executes to `.gdbg/usage.jsonl`
+(one JSON line per command: timestamp, command, args, ok/error, duration).
+`gdbg usage` prints a per-command frequency summary from that file — useful
+for seeing which debugger features agents actually reach for. Purely local;
+nothing leaves the machine.
+
 ## Limitations
 
 - `set` takes numeric, bool, and pointer values (a Delve limit); `eval`

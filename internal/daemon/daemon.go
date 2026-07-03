@@ -5,6 +5,7 @@ package daemon
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net"
 	"os"
@@ -17,6 +18,8 @@ import (
 
 const idleTimeout = 30 * time.Minute
 
+var errNoSession = errors.New("no debug session")
+
 type Daemon struct {
 	root string
 
@@ -28,6 +31,8 @@ type Daemon struct {
 
 	activeMu sync.Mutex
 	lastUsed time.Time
+
+	usage *usageLog
 }
 
 func (d *Daemon) session() *Session {
@@ -60,7 +65,7 @@ func (d *Daemon) touch() {
 
 // Run serves until "down" or idleTimeout. Called from `gdbg __daemon <root>`.
 func Run(root string) error {
-	d := &Daemon{root: root, lastUsed: time.Now()}
+	d := &Daemon{root: root, lastUsed: time.Now(), usage: openUsageLog(client.UsagePath(root))}
 	sock := client.SockPath(root)
 	os.Remove(sock)
 	ln, err := net.Listen("unix", sock)
@@ -110,18 +115,22 @@ func (d *Daemon) handle(conn net.Conn) bool {
 	enc := json.NewEncoder(conn)
 
 	if len(req.Argv) > 0 && req.Argv[0] == "down" {
+		d.usage.record("down", nil, time.Now(), nil)
 		d.stopSession()
 		enc.Encode(proto.Response{Text: "daemon stopped", Shutdown: true})
 		return true
 	}
 	// pause must bypass the serial lock: it interrupts a blocked resume.
 	if len(req.Argv) > 0 && req.Argv[0] == "pause" {
+		start := time.Now()
 		s := d.session()
 		if s == nil {
+			d.usage.record("pause", nil, start, errNoSession)
 			enc.Encode(proto.Response{Text: "no debug session", IsError: true})
 			return false
 		}
 		text, err := s.cmdPause()
+		d.usage.record("pause", nil, start, err)
 		enc.Encode(response(text, err))
 		return false
 	}

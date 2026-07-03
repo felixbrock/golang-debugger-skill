@@ -1,0 +1,18 @@
+{"ts":"2026-07-03T12:49:39Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/js_ast/js_ast_helpers.go:557","--","-run","TestDCEOfIteratorSuperclassIssue4310"],"ok":true,"ms":1714}
+{"ts":"2026-07-03T12:49:44Z","cmd":"state","ok":false,"ms":0,"err":"Process 294611 has exited with status 1"}
+{"ts":"2026-07-03T12:49:52Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/js_ast/js_ast_helpers.go:2350","--","-run","TestDCEOfIteratorSuperclassIssue4310"],"ok":true,"ms":606}
+{"ts":"2026-07-03T12:49:53Z","cmd":"state","ok":true,"ms":5}
+{"ts":"2026-07-03T12:49:57Z","cmd":"eval","args":["class.ExtendsOrNil.Data"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:49:57Z","cmd":"eval","args":["ctx.ExprCanBeRemovedIfUnused(class.ExtendsOrNil)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:50:03Z","cmd":"eval","args":["class.Name.Ref"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:50:03Z","cmd":"continue","ok":true,"ms":4}
+{"ts":"2026-07-03T12:50:08Z","cmd":"eval","args":["class.ExtendsOrNil.Data"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:50:22Z","cmd":"eval","args":["class.ExtendsOrNil.Loc.Start","class.Name.Loc.Start","class.ClassKeyword.Start"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:51:02Z","cmd":"break","args":["internal/js_parser/js_parser.go:13473","--if","name == \"Iterator\""],"ok":true,"ms":8}
+{"ts":"2026-07-03T12:51:02Z","cmd":"break","args":["internal/js_parser/js_parser.go:13473","--if","name == \"NotIterator\""],"ok":false,"ms":7,"err":"Breakpoint exists at /var/tmp/gdbg-bench-esbuild-wt/internal/js_parser/js_parser.go:13473 at 812bc5"}
+{"ts":"2026-07-03T12:51:02Z","cmd":"restart","ok":true,"ms":307}
+{"ts":"2026-07-03T12:51:08Z","cmd":"break-off","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:51:08Z","cmd":"continue","ok":true,"ms":19}
+{"ts":"2026-07-03T12:51:12Z","cmd":"eval","args":["p.options.defines.IdentifierDefines[\"Iterator\"]"],"ok":true,"ms":1}
+{"ts":"2026-07-03T12:51:12Z","cmd":"step","args":["over"],"ok":true,"ms":125}
+{"ts":"2026-07-03T12:51:21Z","cmd":"stop","ok":true,"ms":0}

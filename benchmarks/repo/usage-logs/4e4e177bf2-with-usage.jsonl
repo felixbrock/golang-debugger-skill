@@ -1,0 +1,10 @@
+{"ts":"2026-07-03T12:45:40Z","cmd":"launch","args":["--test","./internal/js_parser/","--break","internal/js_parser/js_parser.go:10603","--","-run","TestMangleTry"],"ok":true,"ms":1116}
+{"ts":"2026-07-03T12:45:49Z","cmd":"break-rm","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:45:49Z","cmd":"break","args":["internal/js_parser/js_parser.go:10603","--if","name == \"e\""],"ok":true,"ms":4}
+{"ts":"2026-07-03T12:45:49Z","cmd":"continue","ok":true,"ms":15}
+{"ts":"2026-07-03T12:45:54Z","cmd":"eval","args":["s.Name.Ref","len((s.Stmt.Data.(*js_ast.STry)).Block.Stmts)","s.Stmt.Data.(*js_ast.STry).Block.Stmts[0].Data.(*js_ast.SFor) != nil","p.symbols[ref.InnerIndex].UseCountEstimate","s.Stmt.Data.(*js_ast.STry).Catch != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:46:00Z","cmd":"eval","args":["p.symbols[ref.InnerIndex].UseCountEstimate"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:46:00Z","cmd":"eval","args":["s.Stmt.Data.(*js_ast.STry).Catch"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:46:04Z","cmd":"eval","args":["p.symbols[4].UseCountEstimate"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:46:04Z","cmd":"eval","args":["s.Stmt.Data.(*js_ast.STry).Catch.Block.Stmts[0].Data"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:46:44Z","cmd":"stop","ok":true,"ms":0}

@@ -1,0 +1,13 @@
+{"ts":"2026-07-03T12:41:54Z","cmd":"launch","args":["--test","./internal/css_parser/","--break","internal/css_parser/css_decls.go:357","--","-run","TestPrefixInsertion"],"ok":true,"ms":925}
+{"ts":"2026-07-03T12:42:01Z","cmd":"eval","args":["decl.KeyText","decl.Key","css_ast.DMask"],"ok":true,"ms":2}
+{"ts":"2026-07-03T12:42:01Z","cmd":"break-rm","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:01Z","cmd":"break","args":["internal/css_parser/css_decls.go:357","--if","decl.KeyText == \"mask\""],"ok":true,"ms":2}
+{"ts":"2026-07-03T12:42:04Z","cmd":"continue","ok":true,"ms":28}
+{"ts":"2026-07-03T12:42:04Z","cmd":"eval","args":["decl.KeyText","decl.Key","p.options.cssPrefixData[decl.Key]","ok2 := func() bool { _, ok := p.options.cssPrefixData[decl.Key]; return ok }()"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["decl.KeyText"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["decl.Key"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["p.options.cssPrefixData[decl.Key]"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["len(p.options.cssPrefixData)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["p.options.cssPrefixData[202]"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:10Z","cmd":"eval","args":["p.options.cssPrefixData[203]"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:42:15Z","cmd":"stop","ok":true,"ms":201}

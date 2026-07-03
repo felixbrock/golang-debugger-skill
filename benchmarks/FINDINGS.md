@@ -172,26 +172,6 @@ Still no crossing — but the gap closed at the hard end:
   deep internals, expressions over real data structures, almost no failed
   commands.
 
-### External update: the crossover, located
-
-After we published these numbers, the Rust project ran the same style of
-experiment on tsz, a ~1.7M-line codebase — contamination-isolated (clean
-checkouts, stripped skills, post-training-cutoff cases, no web), Opus,
-3 real bug fixes, one run per arm. Their results complete our curve:
-
-- On the two bugs that were expensive to read (reading thrashed to 8.8M and
-  22.9M tokens), the debugger cut cost **49% and 70%**; on the one bug that
-  read cheaply it added 91%; −41% in total.
-- Fix rate was still identical (3/3 both arms) — even at 1.7M lines the
-  debugger changes what fixing *costs*, not *whether* it happens.
-- The win only appeared after an rdbg fix made breakpoints that never fired
-  report loudly ("NOT BOUND"); with silent failures the debugger arm had
-  been *more* expensive — tool ergonomics are load-bearing, not cosmetic.
-
-Read together: 1.3× overhead at 20 lines, ~1.0× at 95k, a conditional win
-at 1.7M — the debugger pays exactly where reading degrades into thrash,
-and nowhere before that. Caveat: 3 cases, one run per arm, one repo.
-
 ## Which debugger features agents actually use (usage telemetry)
 
 The daemon now logs every command it executes to `.gdbg/usage.jsonl`
@@ -323,12 +303,8 @@ Two lessons:
    requirement ("quote what you observed") gets 100% compliance everywhere,
    at ~1.5× cost.
 3. For fixing bugs, the debugger never beat reading at any scale we could
-   test ourselves (up to a real 95k-line codebase) — costs converge toward
-   break-even on the hardest bugs. The Rust project's follow-up on a
-   1.7M-line codebase then showed the actual crossing: −49%/−70% tokens on
-   bugs that were expensive to read, +91% on one that wasn't, with fix
-   rates still identical. The debugger pays where reading degrades into
-   thrash, and nowhere before.
+   test (up to a real 95k-line codebase) — costs converge toward break-even
+   on the hardest bugs but never cross.
 4. The debugger's real, measured value is evidence quality: runs contain
    ~3× more observed fact. But most forced observation is decorative; on
    real bugs only ~25% of sessions produced an observation that genuinely

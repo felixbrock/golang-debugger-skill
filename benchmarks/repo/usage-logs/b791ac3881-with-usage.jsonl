@@ -1,0 +1,5 @@
+{"ts":"2026-07-03T12:40:30Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","bundler.go:382","--","-run","TestLoaderDataURLHashSuffixIssue4370"],"ok":true,"ms":2042}
+{"ts":"2026-07-03T12:40:37Z","cmd":"eval","args":["source.KeyPath.IgnoredSuffix","source.KeyPath.Text"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:40:41Z","cmd":"step","args":["over"],"ok":true,"ms":35}
+{"ts":"2026-07-03T12:40:41Z","cmd":"eval","args":["url"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:40:41Z","cmd":"stop","ok":true,"ms":0}

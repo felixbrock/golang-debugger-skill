@@ -1,0 +1,11 @@
+{"ts":"2026-07-03T12:34:44Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/linker/linker.go:4470","--","-run","TestInjectWithStringReExportNameNoBundle"],"ok":true,"ms":2072}
+{"ts":"2026-07-03T12:34:53Z","cmd":"eval","args":["item","item.Alias","item.OriginalName","item.AliasLoc","item.Name.Loc","shouldStripExports"],"ok":true,"ms":1}
+{"ts":"2026-07-03T12:35:00Z","cmd":"stop","ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:00Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/linker/linker.go:4470","--","-run","TestForbidStringExportNamesNoBundle"],"ok":true,"ms":432}
+{"ts":"2026-07-03T12:35:03Z","cmd":"eval","args":["item.Alias","item.OriginalName","item.AliasLoc.Start","item.Name.Loc.Start","shouldStripExports","file.IsEntryPoint()"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:07Z","cmd":"eval","args":["item.Alias"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:07Z","cmd":"eval","args":["item.OriginalName"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:07Z","cmd":"eval","args":["item.AliasLoc.Start"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:07Z","cmd":"eval","args":["item.Name.Loc.Start"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:07Z","cmd":"eval","args":["shouldStripExports"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:35:45Z","cmd":"stop","ok":true,"ms":0}

@@ -1,0 +1,6 @@
+{"ts":"2026-07-03T12:43:12Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/resolver/resolver.go:2259","--","-run","TestPackageJsonImportsHashSlashWithWildcard"],"ok":true,"ms":1623}
+{"ts":"2026-07-03T12:43:17Z","cmd":"eval","args":["importPath","strings.HasPrefix(importPath, \"#/\")","importPath == \"#\""],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:43:17Z","cmd":"eval","args":["packageJSON.importsMap.root"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:43:20Z","cmd":"eval","args":["strings.HasPrefix(importPath, \"#/\")"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:43:20Z","cmd":"eval","args":["importPath == \"#\""],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:43:30Z","cmd":"stop","ok":true,"ms":1}

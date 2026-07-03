@@ -1,0 +1,6 @@
+{"ts":"2026-07-03T12:32:00Z","cmd":"launch","args":["--test","./internal/bundler_tests/","--break","internal/bundler/bundler.go:217","--","-run","TestWithTypeTextOverrideLoader"],"ok":true,"ms":5022}
+{"ts":"2026-07-03T12:32:10Z","cmd":"eval","args":["attr.Value"],"ok":true,"ms":2}
+{"ts":"2026-07-03T12:32:10Z","cmd":"eval","args":["attr.Key"],"ok":true,"ms":3}
+{"ts":"2026-07-03T12:32:10Z","cmd":"eval","args":["loader"],"ok":true,"ms":0}
+{"ts":"2026-07-03T12:32:13Z","cmd":"kill","ok":false,"ms":0,"err":"unknown command \"kill\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-03T12:32:19Z","cmd":"stop","ok":true,"ms":203}

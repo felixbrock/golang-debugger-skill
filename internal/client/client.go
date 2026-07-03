@@ -38,8 +38,9 @@ func ProjectRoot(dir string) string {
 	}
 }
 
-func StateDir(root string) string { return filepath.Join(root, ".gdbg") }
-func LogPath(root string) string  { return filepath.Join(StateDir(root), "daemon.log") }
+func StateDir(root string) string  { return filepath.Join(root, ".gdbg") }
+func LogPath(root string) string   { return filepath.Join(StateDir(root), "daemon.log") }
+func UsagePath(root string) string { return filepath.Join(StateDir(root), "usage.jsonl") }
 
 // SockPath lives under /tmp, not the project: Unix socket paths are limited
 // to ~108 bytes and project paths can exceed that.

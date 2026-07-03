@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -143,6 +144,36 @@ func (s *Session) exitReport(logLines []string, msg string) string {
 		b.WriteString(l + "\n")
 	}
 	b.WriteString(">>> EXIT " + msg + "\n")
+	s.reportNeverHit(&b)
 	writeOutput(&b, s.proc.NewOutput())
 	return strings.TrimRight(b.String(), "\n")
+}
+
+// reportNeverHit lists user breakpoints that never fired during the run.
+// Silence here is dangerous: an agent that set a breakpoint and saw the
+// program exit without stopping tends to conclude "this code is never
+// reached", which is wrong when the location or condition was off.
+func (s *Session) reportNeverHit(b *strings.Builder) {
+	bps, err := s.c.ListBreakpoints()
+	if err != nil {
+		return
+	}
+	for _, bp := range bps {
+		if bp.ID <= 0 || bp.TotalHitCount > 0 || bp.WatchExpr != "" {
+			continue
+		}
+		loc := fmt.Sprintf("%s:%d", filepath.Base(bp.File), bp.Line)
+		if bp.FunctionName != "" {
+			loc += " in " + bp.FunctionName
+		}
+		extra := ""
+		if bp.Cond != "" {
+			extra = fmt.Sprintf(" (condition %q never true)", bp.Cond)
+		}
+		if bp.Disabled {
+			extra = " (disabled)"
+		}
+		fmt.Fprintf(b, "note: breakpoint %d at %s was NEVER HIT%s — the line was bound but not executed; verify the location before concluding this code path is unreached\n",
+			bp.ID, loc, extra)
+	}
 }

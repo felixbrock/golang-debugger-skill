@@ -6,15 +6,25 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/felixbrock/golang-debugger-skill/internal/dlv"
 )
 
-// dispatch executes one gdbg command against the daemon.
+// dispatch executes one gdbg command against the daemon and records it
+// in the usage log. `do` subcommands re-enter here, so each is logged
+// individually alongside the `do` container line.
 func (d *Daemon) dispatch(argv []string) (string, error) {
 	if len(argv) == 0 {
 		return "", fmt.Errorf("empty command")
 	}
+	start := time.Now()
+	text, err := d.execute(argv)
+	d.usage.record(argv[0], argv[1:], start, err)
+	return text, err
+}
+
+func (d *Daemon) execute(argv []string) (string, error) {
 	cmd, args := argv[0], argv[1:]
 
 	switch cmd {
@@ -24,6 +34,8 @@ func (d *Daemon) dispatch(argv []string) (string, error) {
 		return d.cmdTrace(args)
 	case "do":
 		return d.cmdDo(args)
+	case "usage":
+		return d.cmdUsage()
 	case "down":
 		return "", nil // handled by the serve loop
 	}
@@ -76,7 +88,7 @@ func (d *Daemon) dispatch(argv []string) (string, error) {
 		return s.cmdFrame(args)
 	case "output":
 		return strings.Join(s.proc.AllOutput(), "\n"), nil
-	case "stop":
+	case "stop", "kill": // agents guess "kill" for ending the session
 		d.stopSession()
 		return "session ended (daemon still up; gdbg down stops it)", nil
 	default:
@@ -321,6 +333,9 @@ func (d *Daemon) cmdTrace(args []string) (string, error) {
 	if hits >= max {
 		suffix = fmt.Sprintf(" (stopped at --max %d; program halted mid-run)", max)
 		s.exited = false
+	}
+	if hits == 0 {
+		s.reportNeverHit(&b)
 	}
 	writeOutput(&b, s.proc.NewOutput())
 	return fmt.Sprintf("trace: %d hit(s)%s\n%s", hits, suffix, strings.TrimRight(b.String(), "\n")), nil

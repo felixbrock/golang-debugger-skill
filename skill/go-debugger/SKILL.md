@@ -35,6 +35,9 @@ runs through every hit and returns a table in one call:
 gdbg trace --pkg . --break main.go:42 --capture i,sum --max 30
 ```
 
+Same `--test`/`--pkg` flags as `launch`. If you catch yourself repeating
+`eval` + `continue` at one breakpoint, that whole loop is a single `trace`.
+
 ## Breakpoints
 
 Set or change these any time, including while paused.
@@ -112,5 +115,8 @@ Several commands in one call: `gdbg do "vars; step over; vars"`.
   most arithmetic); `set` takes numeric, bool and pointer values.
 - Watchpoints are scope-bound: set them where the variable is live; the stop
   reports when one goes out of scope.
+- When the program exits, gdbg lists any breakpoints that were NEVER HIT —
+  treat that as "wrong location or condition", not as proof the code is
+  unreached.
 - One paused process per project; a new `launch` replaces it. The daemon
   shuts down after 30 minutes idle. State lives in `.gdbg/` (gitignore it).

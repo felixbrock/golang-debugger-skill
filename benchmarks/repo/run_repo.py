@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -119,6 +120,10 @@ def one_run(bench: Bench, case, cond, outdir: Path):
     info = bench.run_agent(prompt, outdir / f"{case['sha'][:10]}-{cond}.jsonl")
     wall = round(time.monotonic() - start, 1)
     passed = bench.verify(case)
+    # the next run's reset wipes .gdbg/ — keep this run's usage log
+    usage = bench.wt / ".gdbg" / "usage.jsonl"
+    if usage.exists():
+        shutil.copy(usage, outdir / f"{case['sha'][:10]}-{cond}-usage.jsonl")
     subprocess.run(["pkill", "-f", "gdbg __daemon"], capture_output=True)
     subprocess.run(["pkill", "-f", "dlv "], capture_output=True)
     return {"case": case["sha"][:10], "bug": case["bug"][:60], "cond": cond,
@@ -130,16 +135,20 @@ def main():
     ap.add_argument("clone")
     ap.add_argument("worktree")
     ap.add_argument("--cases", type=int, default=0)
+    ap.add_argument("--skip", type=int, default=0, help="skip the first N cases (resume)")
     ap.add_argument("--conditions", default="without,with")
     a = ap.parse_args()
     cases = json.loads((ROOT / "cases.json").read_text())
+    cases = cases[a.skip:]
     if a.cases:
         cases = cases[: a.cases]
     bench = Bench(Path(a.clone).resolve(), Path(a.worktree).resolve())
-    outdir = Path("/tmp/gdbg-bench-repo-results")
+    outdir = Path(os.environ.get("GDBG_REPO_OUT", "/tmp/gdbg-bench-repo-results"))
     outdir.mkdir(exist_ok=True)
 
     rows = []
+    if a.skip and (ROOT / "runs.json").exists():
+        rows = json.loads((ROOT / "runs.json").read_text())
     for case in cases:
         for cond in a.conditions.split(","):
             print(f"[{time.strftime('%H:%M:%S')}] {case['sha'][:10]} / {cond} — {case['bug'][:60]}", flush=True)
