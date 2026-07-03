@@ -208,6 +208,48 @@ unfiltered harvest would be 75–93% theater. The hard and valuable part is
 detecting whether an observation actually informed the conclusion —
 `grounding/judge.py` is a first prototype of that filter.
 
+## When reading can't work: a cross-service bug
+
+Everything above involves code the agent could fully read, which is exactly
+what these models are best at. Real distributed systems aren't like that:
+behavior lives in the *interaction* between services, and the other team's
+source usually isn't in your checkout. We built that situation
+(`integration/`): a billing service (source available) calls a third-party
+currency-rates binary (source **not** available). The rates service has an
+undocumented contract quirk — for reversed currency pairs it returns the
+canonical rate plus `"inverse": true`, expecting the caller to divide. The
+billing code doesn't know the flag exists, multiplies, and gets wrong
+totals. Its mocked unit tests pass; the integration test fails with an
+unhelpful number. Nothing the agent can read mentions the flag — the fact
+exists only in the running service's behavior. 5 runs per arm, clean
+config:
+
+- read-only arm: **5/5 passed**, 220k mean tokens, 55s — and, for the first
+  time in ~200 runs, **every single run probed the live service** (one curl
+  each). The agents recognized reading was insufficient and observed,
+  unprompted.
+- debugger-required arm: 5/5 passed, 520k mean tokens (2.4×), 148s, 9.2
+  debugger calls per run — and they *still* ended up probing the service
+  with curl (1.2 probes/run) to see the raw response.
+
+Two lessons:
+
+- **The structural claim is half right.** When the truth isn't in any
+  readable file, observation stops being optional — and agents know it.
+  What fails isn't the agent; it's the assumption that they'll guess. They
+  reach for observation on their own the moment reading has nothing to
+  offer.
+- **The debugger was the wrong observation tool for this bug — for an
+  interesting reason.** The billing code decodes the response into a struct
+  without the `inverse` field, so by the time a debugger can see the data,
+  the crucial flag has already been discarded. The debugger shows the
+  *program's view*; the truth was on the *wire*. One curl showed the raw
+  JSON instantly. In-process debugging pays off when the wrongness is
+  inside a service's state; boundary observation (watching what actually
+  crosses between services) is the right primitive when the wrongness is in
+  the contract — and cross-service bugs are, by definition, contract bugs
+  first.
+
 ## Bottom line
 
 1. A passive "this tool exists" note gets ~0% use, in every language and
@@ -225,3 +267,11 @@ detecting whether an observation actually informed the conclusion —
    drove the fix. Anything built on debugger data — verification gates,
    knowledge bases, RL training — stands or falls on filtering the genuine
    sessions from the theater.
+5. Where reading is structurally impossible (a cross-service contract bug
+   with the other service's source unavailable), agents switch to
+   observation on their own — but the cheapest correct observation was the
+   service *boundary* (one curl), not in-process debugging, because the
+   program had already discarded the evidence by the time a debugger could
+   see it. Runtime observation for agents is bigger than debuggers: the
+   boundary tap and the breakpoint are complements, and for integration
+   bugs the boundary comes first.

@@ -1,0 +1,10 @@
+{"condition": "without", "idx": "0", "passed": true, "gdbg_calls": 0, "probe_calls": 1, "binary_inspection": 0, "tokens": 254088, "wall_s": 58.6}
+{"condition": "without", "idx": "1", "passed": true, "gdbg_calls": 0, "probe_calls": 1, "binary_inspection": 0, "tokens": 164699, "wall_s": 45.5}
+{"condition": "without", "idx": "2", "passed": true, "gdbg_calls": 0, "probe_calls": 1, "binary_inspection": 0, "tokens": 256827, "wall_s": 63.5}
+{"condition": "without", "idx": "3", "passed": true, "gdbg_calls": 0, "probe_calls": 1, "binary_inspection": 0, "tokens": 166528, "wall_s": 52.8}
+{"condition": "without", "idx": "4", "passed": true, "gdbg_calls": 0, "probe_calls": 1, "binary_inspection": 0, "tokens": 256222, "wall_s": 55.7}
+{"condition": "with", "idx": "0", "passed": true, "gdbg_calls": 7, "probe_calls": 2, "binary_inspection": 0, "tokens": 489375, "wall_s": 102.0}
+{"condition": "with", "idx": "1", "passed": true, "gdbg_calls": 8, "probe_calls": 1, "binary_inspection": 0, "tokens": 409667, "wall_s": 159.0}
+{"condition": "with", "idx": "2", "passed": true, "gdbg_calls": 8, "probe_calls": 1, "binary_inspection": 0, "tokens": 469782, "wall_s": 129.8}
+{"condition": "with", "idx": "3", "passed": true, "gdbg_calls": 13, "probe_calls": 1, "binary_inspection": 0, "tokens": 722977, "wall_s": 191.9}
+{"condition": "with", "idx": "4", "passed": true, "gdbg_calls": 10, "probe_calls": 1, "binary_inspection": 0, "tokens": 508788, "wall_s": 157.5}
