@@ -1,0 +1,7 @@
+{"ts":"2026-07-03T21:07:02Z","cmd":"launch","args":["--test","./pkg/kubelet/images/pullmanager/","--break","locks.go:44","--","-run","TestStripedLockSetLargeRequestedSizeDoesNotPanic"],"ok":true,"ms":47492}
+{"ts":"2026-07-03T21:07:54Z","cmd":"eval","args":["s.size"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:07:54Z","cmd":"eval","args":["len(s.locks)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:07:54Z","cmd":"eval","args":["keyToID(key, s.size)"],"ok":true,"ms":6}
+{"ts":"2026-07-03T21:07:59Z","cmd":"eval","args":["call keyToID(key, s.size)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:07:59Z","cmd":"eval","args":["call keyToID(key, int32(len(s.locks)))"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:08:03Z","cmd":"trace","args":["--test","./pkg/kubelet/images/pullmanager/","--break","locks.go:44","--capture","s.size,key","--","-run","TestStripedLockSetLargeRequestedSizeDoesNotPanic"],"ok":true,"ms":2709}

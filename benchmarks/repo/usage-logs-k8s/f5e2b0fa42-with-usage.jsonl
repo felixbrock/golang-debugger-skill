@@ -1,0 +1,38 @@
+{"ts":"2026-07-03T20:18:35Z","cmd":"launch","args":["--test","./pkg/kubelet/","--break","pkg/kubelet/pod_workers.go:1155","--","-run","TestUpdatePod"],"ok":false,"ms":42254,"err":"dlv exited before serving:\n# k8s.io/kubernetes/pkg/kubelet [k8s.io/kubernetes/pkg/kubelet.test]\npkg/kubelet/pod_workers_test.go:605:13: expected.ctx undefined (type *podSyncStatus has no field or method ctx)\npkg/kubelet/pod_workers_test.go:605:25: status.ctx undefined (type *podSyncStatus has no field or method ctx)\nexit status 1"}
+{"ts":"2026-07-03T20:20:17Z","cmd":"launch","args":["--test","./pkg/kubelet/","--break","pkg/kubelet/pod_workers.go:1156","--","-run","TestUpdatePod$"],"ok":true,"ms":12960}
+{"ts":"2026-07-03T20:20:39Z","cmd":"launch","args":["--test","./pkg/kubelet/","--break-fn","k8s.io/kubernetes/pkg/kubelet.(*podWorkers).startPodSync","--","-run","TestUpdatePod$"],"ok":true,"ms":6256}
+{"ts":"2026-07-03T20:20:48Z","cmd":"until","args":["pkg/kubelet/pod_workers.go:1157"],"ok":true,"ms":116}
+{"ts":"2026-07-03T20:20:49Z","cmd":"eval","args":["status.ctx","status.ctx == ctx","status.cancelFn != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:20:54Z","cmd":"until","args":["pkg/kubelet/pod_workers.go:1160"],"ok":true,"ms":107}
+{"ts":"2026-07-03T20:20:54Z","cmd":"eval","args":["status.ctx"],"ok":true,"ms":30}
+{"ts":"2026-07-03T20:20:54Z","cmd":"eval","args":["status.ctx == ctx"],"ok":true,"ms":39}
+{"ts":"2026-07-03T20:20:54Z","cmd":"eval","args":["status.cancelFn != nil"],"ok":true,"ms":34}
+{"ts":"2026-07-03T20:21:02Z","cmd":"restart","ok":true,"ms":1471}
+{"ts":"2026-07-03T20:21:03Z","cmd":"break","args":["pkg/kubelet/pod_workers.go:1160"],"ok":true,"ms":99}
+{"ts":"2026-07-03T20:21:03Z","cmd":"continue","ok":true,"ms":54}
+{"ts":"2026-07-03T20:21:03Z","cmd":"eval","args":["status.ctx != nil"],"ok":true,"ms":31}
+{"ts":"2026-07-03T20:21:03Z","cmd":"eval","args":["status.ctx == ctx"],"ok":true,"ms":37}
+{"ts":"2026-07-03T20:21:03Z","cmd":"eval","args":["status.cancelFn != nil"],"ok":true,"ms":34}
+{"ts":"2026-07-03T20:21:09Z","cmd":"break-rm","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:09Z","cmd":"continue","ok":true,"ms":17}
+{"ts":"2026-07-03T20:21:09Z","cmd":"list","ok":false,"ms":0,"err":"Process 1986024 has exited with status 0"}
+{"ts":"2026-07-03T20:21:09Z","cmd":"eval","args":["status.ctx != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:09Z","cmd":"eval","args":["status.ctx == ctx"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:09Z","cmd":"eval","args":["status.cancelFn != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:18Z","cmd":"restart","ok":true,"ms":1396}
+{"ts":"2026-07-03T20:21:19Z","cmd":"break-fn","args":["k8s.io/kubernetes/pkg/kubelet.(*podWorkers).startPodSync"],"ok":false,"ms":0,"err":"unknown command \"break-fn\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-03T20:21:19Z","cmd":"continue","ok":true,"ms":46}
+{"ts":"2026-07-03T20:21:19Z","cmd":"until","args":["pkg/kubelet/pod_workers.go:1158"],"ok":false,"ms":95,"err":"Process 1989743 has exited with status 0"}
+{"ts":"2026-07-03T20:21:19Z","cmd":"do","args":["until pkg/kubelet/pod_workers.go:1158; eval status.cancelFn != nil; step over; eval status.ctx != nil; eval status.ctx == ctx"],"ok":true,"ms":95}
+{"ts":"2026-07-03T20:21:27Z","cmd":"stop","ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:27Z","cmd":"launch","args":["--test","./pkg/kubelet/","--break-fn","k8s.io/kubernetes/pkg/kubelet.(*podWorkers).startPodSync","--","-run","TestUpdatePod$"],"ok":true,"ms":3922}
+{"ts":"2026-07-03T20:21:31Z","cmd":"until","args":["pkg/kubelet/pod_workers.go:1158"],"ok":true,"ms":99}
+{"ts":"2026-07-03T20:21:31Z","cmd":"eval","args":["status.cancelFn","!=","nil"],"ok":true,"ms":5}
+{"ts":"2026-07-03T20:21:31Z","cmd":"step","args":["over"],"ok":true,"ms":22}
+{"ts":"2026-07-03T20:21:31Z","cmd":"step","args":["over"],"ok":true,"ms":13}
+{"ts":"2026-07-03T20:21:31Z","cmd":"eval","args":["status.ctx","!=","nil"],"ok":true,"ms":8}
+{"ts":"2026-07-03T20:21:31Z","cmd":"eval","args":["status.ctx","==","ctx"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:21:31Z","cmd":"eval","args":["status.cancelFn","!=","nil"],"ok":true,"ms":11}
+{"ts":"2026-07-03T20:21:31Z","cmd":"do","args":["until pkg/kubelet/pod_workers.go:1158; eval status.cancelFn != nil; step over; step over; eval status.ctx != nil; eval status.ctx == ctx; eval status.cancelFn != nil"],"ok":true,"ms":162}
+{"ts":"2026-07-03T20:21:38Z","cmd":"stop","ok":true,"ms":1}
+{"ts":"2026-07-03T20:21:38Z","cmd":"down","ok":true,"ms":0}

@@ -14,11 +14,13 @@ Go 1.26.
 ## The headline result
 
 **The agent never needed the debugger.** It fixed every bug in every
-condition — small planted bugs, hard multi-file bugs, and 12 real historical
-esbuild bugs — by reading the code. Using the debugger never improved
-correctness and always cost more tokens (1.3–1.8× on clean measurements).
-The extra cost shrinks as bugs get harder to read, reaching roughly
-break-even on the hardest real bugs, but it never became a saving.
+condition — small planted bugs, hard multi-file bugs, 12 real historical
+esbuild bugs, and 10 real historical Kubernetes bugs in a 3.6M-line repo —
+by reading the code. Using the debugger never improved correctness and
+always cost more tokens (1.24–1.9× on clean measurements). The extra cost
+shrinks where the failing signal localizes badly, but on our cases it never
+became a saving — not even at Kubernetes scale (see the crossover sections
+for where it does).
 
 ## Both experiments, side by side
 
@@ -214,9 +216,56 @@ checkouts, stripped skills, post-training-cutoff cases, no web), Opus,
   report loudly ("NOT BOUND"); with silent failures the debugger arm had
   been *more* expensive — tool ergonomics are load-bearing, not cosmetic.
 
-Read together: 1.3× overhead at 20 lines, ~1.0× at 95k, a conditional win
-at 1.7M — the debugger pays exactly where reading degrades into thrash,
-and nowhere before that. Caveat: 3 cases, one run per arm, one repo.
+Read together, the natural reading was: 1.3× overhead at 20 lines, ~1.0×
+at 95k, a win at 1.7M — a curve over codebase size. That extrapolation is
+testable, so we tested it (next section). It fails: size was the wrong
+variable. What survives is the second half of the sentence — the debugger
+pays exactly where reading degrades into thrash, and nowhere before that.
+
+## Kubernetes at 3.6M lines: size was the wrong variable
+
+If the curve above were really about codebase size, a bigger codebase
+should show a bigger win. We tested that directly. Same hardened method
+(single-commit checkouts, post-cutoff cases only, no web, clean config),
+10 real merged Kubernetes bug fixes — scheduler, kubelet, job controller,
+DRA; each ships a regression test, each mechanically verified to fail
+before the fix and pass with it (`repo/cases-k8s.json`,
+`repo/runs-k8s.json`). Kubernetes is 3.6M lines of Go — twice tsz, 38×
+esbuild.
+
+- read-only: **10/10 solved**, 509k mean tokens, 198s mean.
+- debugger required: **10/10 solved**, 954k mean tokens — **1.88×**, and
+  **0/10 debugger wins** (the best case still cost 1.26×).
+- The surprise is the read arm: reading a 38× bigger repo cost *half* what
+  esbuild did (509k vs 984k mean). Codebase size did not make reading
+  expensive.
+- Why: every Kubernetes case ships a failing unit test in the same package
+  as the bug. The test name and its failure message hand the agent the
+  right few files; the other 3.6M lines might as well not exist.
+- Even the two expensive read runs (1.3M and 1.4M tokens) produced no win:
+  the debugger arm found the bug the same way — by reading — and then paid
+  for the mandated observation on top. That is the theater pattern from
+  the grounding analysis, unchanged at 3.6M lines.
+
+So the crossover variable is not lines of code. It is the **distance
+between the failing signal and the causing code**:
+
+- Kubernetes bug with a package-local unit test: distance near zero, at
+  any repo size → the debugger only adds cost (1.88×).
+- tsz bug where the signal is a wrong emitted file and the cause is
+  anywhere in a 1.7M-line pipeline: distance huge → reading thrashes
+  (8.8M, 22.9M tokens) and the debugger wins big (−49%, −70%).
+- Our cross-service bug, where the causing code isn't readable at all:
+  distance infinite → observation is the only move that works.
+
+This reframing is better news for the debugger thesis than the size story,
+because badly-localized failures are exactly the class that stays painful
+as models improve — integration failures, emergent behavior, wrong-output
+bugs with no failing test near the cause. But it also shrinks the market:
+a well-tested repo localizes most of its regressions for free, and there
+the debugger has nothing to sell. Caveat: one run per case per arm, and
+single runs vary ±30% — the 0/10 and the halved read cost are the robust
+part, not any individual ratio.
 
 ## Which debugger features agents actually use (usage telemetry)
 
@@ -252,13 +301,23 @@ humans (stepping, stack navigation, state mutation) are the ones agents
 skip; the ones they lean on are targeted expression evaluation and
 conditional breakpoints.
 
+The 10 Kubernetes runs replicate all of it (`repo/usage-logs-k8s/`): 159
+daemon commands, `eval` at 45% plus launch/continue plumbing, 5 steps,
+3 backtraces, zero `set`, zero `goroutines`. Notably, `trace` was used
+once in 159 commands even though the skill file in these runs documents it
+with ready-made failure-shape recipes and the prompt lists it among the
+suggested commands — mentioning a strategy is apparently not enough; the
+untested next step is prescribing the recipe for the specific failure
+shape in the prompt (the planned third arm).
+
 Two side findings:
 
 - Transcript-level counting (`gdbg` invocations in Bash calls) undercounts
   real usage 2.6×: the 8 logged esbuild runs made 140 daemon commands
   through 54 shell invocations, because agents chain several gdbg commands
   per shell line. Earlier per-run "gdbg calls" numbers in this document are
-  shell-level and therefore floors.
+  shell-level and therefore floors. (Kubernetes replication: 159 daemon
+  commands through 80 shell calls, 2.0×.)
 - The only unknown-command errors in the whole dataset: two agents guessed
   `gdbg kill` to end the session (it's `stop`; `kill` is now an alias).
 
@@ -348,13 +407,13 @@ Two lessons:
    machine setup and with the programming language. A checkable proof
    requirement ("quote what you observed") gets 100% compliance everywhere,
    at ~1.5× cost.
-3. For fixing bugs, the debugger never beat reading at any scale we could
-   test ourselves (up to a real 95k-line codebase) — costs converge toward
-   break-even on the hardest bugs. The Rust project's follow-up on a
-   1.7M-line codebase then showed the actual crossing: −49%/−70% tokens on
-   bugs that were expensive to read, +91% on one that wasn't, with fix
-   rates still identical. The debugger pays where reading degrades into
-   thrash, and nowhere before.
+3. For fixing bugs, the debugger never beat reading on any bug whose
+   failing test localized the cause — not at 20 lines, not at 95k
+   (esbuild, 1.24×), not at 3.6M (Kubernetes, 1.88×, 0/10 wins). The Rust
+   project's tsz result shows where it does win (−49%/−70%): bugs whose
+   symptom is far from its cause, where reading thrashes for tens of
+   millions of tokens. The variable is signal-to-cause distance, not
+   codebase size; fix rates are identical everywhere either way.
 4. The debugger's real, measured value is evidence quality: runs contain
    ~3× more observed fact. But most forced observation is decorative; on
    real bugs only ~25% of sessions produced an observation that genuinely

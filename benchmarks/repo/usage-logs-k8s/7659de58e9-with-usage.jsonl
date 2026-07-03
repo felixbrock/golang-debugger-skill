@@ -1,0 +1,10 @@
+{"ts":"2026-07-03T20:08:57Z","cmd":"launch","args":["--test","./pkg/scheduler/framework/plugins/dynamicresources/","--break","pkg/scheduler/framework/plugins/dynamicresources/dynamicresources.go:527","--","-run","TestPreFilterReusesPendingAllocationWithNilNodeSelector"],"ok":true,"ms":17910}
+{"ts":"2026-07-03T20:09:17Z","cmd":"eval","args":["pendingAllocation.NodeSelector","pendingAllocation.NodeSelector == nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:09:20Z","cmd":"eval","args":["pendingAllocation.NodeSelector == nil"],"ok":true,"ms":5}
+{"ts":"2026-07-03T20:09:20Z","cmd":"eval","args":["pendingAllocation.NodeSelector"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:09:24Z","cmd":"step","args":["in"],"ok":true,"ms":19}
+{"ts":"2026-07-03T20:09:24Z","cmd":"bt","args":["--depth","3"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:09:24Z","cmd":"do","args":["step in; bt --depth 3"],"ok":true,"ms":19}
+{"ts":"2026-07-03T20:09:29Z","cmd":"continue","ok":true,"ms":1002}
+{"ts":"2026-07-03T20:09:29Z","cmd":"do","args":["continue"],"ok":true,"ms":1002}
+{"ts":"2026-07-03T20:09:41Z","cmd":"stop","ok":true,"ms":0}

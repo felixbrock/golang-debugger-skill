@@ -1,0 +1,170 @@
+[
+  {
+    "sha": "7659de58e910dc455cdd88bcf1cf2ab265beb939",
+    "parent": "75674ef5a24cf3bda786841a81734ffd0d9f0943",
+    "date": "2026-07-02",
+    "bug": "Fix: prevent panic for pending allocations in DRA",
+    "overlay": [
+      "pkg/scheduler/framework/plugins/dynamicresources/dynamicresources_test.go"
+    ],
+    "code": [
+      "pkg/scheduler/framework/plugins/dynamicresources/dynamicresources.go"
+    ],
+    "codelines": 21,
+    "pkgs": [
+      "./pkg/scheduler/framework/plugins/dynamicresources/"
+    ]
+  },
+  {
+    "sha": "f5e2b0fa42891720f845860c8c9a92bf09e00d22",
+    "parent": "fbef17bc5f376c235da0f95070762e7211810893",
+    "date": "2026-06-25",
+    "bug": "kubelet startPodSync: reuse the previous context to fix memory leak regression",
+    "overlay": [
+      "pkg/kubelet/pod_workers_test.go"
+    ],
+    "code": [
+      "pkg/kubelet/pod_workers.go"
+    ],
+    "codelines": 16,
+    "pkgs": [
+      "./pkg/kubelet/"
+    ]
+  },
+  {
+    "sha": "e86d4e002a81ece87139b43fba9aa8808b501bbf",
+    "parent": "6abaca5f3ada9a47428f85ca44b0030cf063917f",
+    "date": "2026-06-24",
+    "bug": "Fix dbus connection leak in node shutdown manager causing thread exhaustion",
+    "overlay": [
+      "pkg/kubelet/nodeshutdown/nodeshutdown_manager_linux_test.go",
+      "pkg/kubelet/nodeshutdown/systemd/inhibit_linux_test.go"
+    ],
+    "code": [
+      "pkg/kubelet/nodeshutdown/nodeshutdown_manager_linux.go",
+      "pkg/kubelet/nodeshutdown/systemd/inhibit_linux.go"
+    ],
+    "codelines": 34,
+    "pkgs": [
+      "./pkg/kubelet/nodeshutdown/",
+      "./pkg/kubelet/nodeshutdown/systemd/"
+    ]
+  },
+  {
+    "sha": "89bf57885306efc26011a5ce13b36662a4c73726",
+    "parent": "d3cd53da48d58b7b82779aa3019eb1d315d37715",
+    "date": "2026-06-23",
+    "bug": "Fix pod updated with deletion timestamp not being removed from cached podGroupState",
+    "overlay": [
+      "pkg/scheduler/backend/cache/cache_test.go",
+      "pkg/scheduler/eventhandlers_test.go"
+    ],
+    "code": [
+      "pkg/scheduler/backend/cache/cache.go",
+      "pkg/scheduler/backend/cache/interface.go",
+      "pkg/scheduler/eventhandlers.go"
+    ],
+    "codelines": 65,
+    "pkgs": [
+      "./pkg/scheduler/",
+      "./pkg/scheduler/backend/cache/"
+    ]
+  },
+  {
+    "sha": "d57b170cda65d284030d6773f7b967f224a6158b",
+    "parent": "66ad1618f14a5dd94de0d6c3c80a889a14bc382f",
+    "date": "2026-06-11",
+    "bug": "scheduler: fix pending pods metric accounting for entities with size > 1",
+    "overlay": [
+      "pkg/scheduler/backend/heap/heap_test.go"
+    ],
+    "code": [
+      "pkg/scheduler/backend/heap/heap.go"
+    ],
+    "codelines": 8,
+    "pkgs": [
+      "./pkg/scheduler/backend/heap/"
+    ]
+  },
+  {
+    "sha": "c2cd34a6eddf7614146f00a84b9ea85981c2caf7",
+    "parent": "87741d80fdf7ed8b81fb0d4779c3fd77a86250cb",
+    "date": "2026-06-11",
+    "bug": "Fix job controller reporting active=0 during pod creation backoff",
+    "overlay": [
+      "pkg/controller/job/job_controller_test.go"
+    ],
+    "code": [
+      "pkg/controller/job/job_controller.go"
+    ],
+    "codelines": 11,
+    "pkgs": [
+      "./pkg/controller/job/"
+    ]
+  },
+  {
+    "sha": "1af59c2d1f7bbfe23156f893d929c20ca80a2009",
+    "parent": "1b85ff009e30bd1f42c320697a0548f5591e6e6c",
+    "date": "2026-06-10",
+    "bug": "Fix pullmanager lock stripe normalization",
+    "overlay": [
+      "pkg/kubelet/images/pullmanager/locks_test.go"
+    ],
+    "code": [
+      "pkg/kubelet/images/pullmanager/locks.go"
+    ],
+    "codelines": 9,
+    "pkgs": [
+      "./pkg/kubelet/images/pullmanager/"
+    ]
+  },
+  {
+    "sha": "de391ca4a4dfe6288287088a8f8ea8bc2352d5b8",
+    "parent": "586cc904093af4fe7492e564908a796f0b107f97",
+    "date": "2026-06-10",
+    "bug": "Generalize cpumanager checkpoint remaining fixes",
+    "overlay": [
+      "pkg/kubelet/cm/cpumanager/state/state_checkpoint_test.go"
+    ],
+    "code": [
+      "pkg/kubelet/cm/cpumanager/state/checkpoint.go",
+      "pkg/kubelet/cm/cpumanager/state/state_checkpoint.go"
+    ],
+    "codelines": 4,
+    "pkgs": [
+      "./pkg/kubelet/cm/cpumanager/state/"
+    ]
+  },
+  {
+    "sha": "9f192ba95aa519007eb3abcd9146a47316f41921",
+    "parent": "35bed76715330c233f0554edbcac761929b9491c",
+    "date": "2026-06-02",
+    "bug": "DRA: Fix shared in-flight allocation accounting in error paths",
+    "overlay": [
+      "pkg/scheduler/framework/plugins/dynamicresources/dynamicresources_test.go"
+    ],
+    "code": [
+      "pkg/scheduler/framework/plugins/dynamicresources/dynamicresources.go"
+    ],
+    "codelines": 49,
+    "pkgs": [
+      "./pkg/scheduler/framework/plugins/dynamicresources/"
+    ]
+  },
+  {
+    "sha": "bb09ec215959e6c98dabacc3496dfddff9a2e1b6",
+    "parent": "dc7be641101f4ad0ba4d13478e65839b0fa7deb2",
+    "date": "2026-06-02",
+    "bug": "Fix invalid kube-reserved configuration in kubelet causes frequent no\u2026",
+    "overlay": [
+      "cmd/kubelet/app/server_test.go"
+    ],
+    "code": [
+      "cmd/kubelet/app/server.go"
+    ],
+    "codelines": 3,
+    "pkgs": [
+      "./cmd/kubelet/app/"
+    ]
+  }
+]

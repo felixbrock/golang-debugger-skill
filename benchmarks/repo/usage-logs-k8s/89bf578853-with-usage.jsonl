@@ -1,0 +1,24 @@
+{"ts":"2026-07-03T20:52:44Z","cmd":"launch","args":["--test","./pkg/scheduler/","--break","pkg/scheduler/eventhandlers.go:343","--","-run","TestDeletePod/delete_an_assumed_pod_group_member_waiting_on_permit"],"ok":true,"ms":32318}
+{"ts":"2026-07-03T20:53:21Z","cmd":"eval","args":["pod.UID","pod.Spec.SchedulingGroup.PodGroupName","sched.Cache.(*k8s.io/kubernetes/pkg/scheduler/backend/cache.cacheImpl).podGroupStates"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:53:24Z","cmd":"eval","args":["pod.UID"],"ok":true,"ms":1}
+{"ts":"2026-07-03T20:53:24Z","cmd":"eval","args":["len(sched.Cache.(*k8s.io/kubernetes/pkg/scheduler/backend/cache.cacheImpl).podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:53:29Z","cmd":"step","args":["over"],"ok":true,"ms":17}
+{"ts":"2026-07-03T20:53:29Z","cmd":"eval","args":["isAssumed"],"ok":true,"ms":4}
+{"ts":"2026-07-03T20:53:29Z","cmd":"do","args":["step over; eval isAssumed"],"ok":true,"ms":22}
+{"ts":"2026-07-03T20:53:37Z","cmd":"break","args":["pkg/scheduler/eventhandlers.go:262"],"ok":true,"ms":72}
+{"ts":"2026-07-03T20:53:37Z","cmd":"continue","ok":true,"ms":29}
+{"ts":"2026-07-03T20:53:37Z","cmd":"eval","args":["isAssumed"],"ok":true,"ms":6}
+{"ts":"2026-07-03T20:53:37Z","cmd":"do","args":["continue; eval isAssumed"],"ok":true,"ms":36}
+{"ts":"2026-07-03T20:53:41Z","cmd":"eval","args":["fwk.RejectWaitingPod(pod.UID)"],"ok":true,"ms":1}
+{"ts":"2026-07-03T20:53:54Z","cmd":"frame","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:53:54Z","cmd":"eval","args":["sched.Cache","--depth","3"],"ok":true,"ms":2}
+{"ts":"2026-07-03T20:54:08Z","cmd":"break-rm","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:54:08Z","cmd":"break-rm","args":["2"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:54:08Z","cmd":"break","args":["pkg/scheduler/eventhandlers.go:265"],"ok":true,"ms":76}
+{"ts":"2026-07-03T20:54:09Z","cmd":"restart","ok":true,"ms":906}
+{"ts":"2026-07-03T20:54:09Z","cmd":"launch","args":["--test","./pkg/scheduler/","--break","pkg/scheduler/eventhandlers.go:265","--","-run","TestUpdatePod/update_assumed_pod_group_member_with_deletion_timestamp"],"ok":true,"ms":3609}
+{"ts":"2026-07-03T20:54:18Z","cmd":"eval","args":["sched.Cache","--depth","3"],"ok":true,"ms":3}
+{"ts":"2026-07-03T20:54:18Z","cmd":"step","args":["over"],"ok":true,"ms":27}
+{"ts":"2026-07-03T20:54:18Z","cmd":"eval","args":["sched.Cache","--depth","4"],"ok":true,"ms":2}
+{"ts":"2026-07-03T20:55:36Z","cmd":"stop","ok":true,"ms":3}
+{"ts":"2026-07-03T20:56:16Z","cmd":"down","ok":true,"ms":0}

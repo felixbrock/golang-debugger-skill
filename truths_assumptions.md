@@ -7,12 +7,13 @@ Turn runtime observation into durable, trainable knowledge, so that agents under
 ## Truths
 
 - Coding agents default to read-and-guess: a passively available debugger gets used in 0% of runs (0/30 controls, two languages).
-- Up to at least a 95k-line codebase, reading is sufficient: read-only agents fixed 100% of ~60 benchmark bugs, cheaper on average than debugger runs.
+- Wherever the failing signal localizes the bug, reading is sufficient at any repo size: read-only agents fixed 100% of ~70 benchmark bugs, including 10/10 real Kubernetes bugs in a 3.6M-line repo, cheaper on average than debugger runs.
 - Telling the agent to use the debugger doesn't work reliably: plain orders score 0–5/5 depending on ambient machine context and programming language.
 - Whatever an agent learns at runtime is thrown away when the session ends — there is no persistence mechanism today.
 - Written knowledge bases are ignored: agents skip docs even when instructed to read them, mirroring the 0% passive-tool adoption.
-- The debugger's cost penalty shrinks monotonically as reading gets harder (1.3× on toy bugs → token parity and faster wall-clock on the hardest real esbuild bugs).
-- At 1.7M lines the crossover is real: the Rust study's contamination-isolated tsz benchmark measured −49%/−70% tokens on bugs that were expensive to read, +91% where reading was cheap, fix rates identical (3 cases, one run per arm).
+- The debugger's cost penalty tracks how badly the failure localizes, not how big the repo is: 1.24× on esbuild (95k lines) but 1.88× with 0/10 wins on Kubernetes (3.6M lines), where every case ships a package-local failing test that hands the agent the right files.
+- Reading cost does not grow with codebase size: the Kubernetes read arm (3.6M lines) averaged half the tokens of the esbuild read arm (95k lines) — 509k vs 984k — because unit-test localization collapses the search no matter how much code surrounds it.
+- The crossover is real but conditional: the Rust study's contamination-isolated tsz benchmark measured −49%/−70% tokens on bugs whose symptom (a wrong emitted file) sat far from the cause, +91% where reading was cheap, fix rates identical (3 cases, one run per arm).
 - Loud tool failure is load-bearing: the tsz win only existed after rdbg started reporting breakpoints that never fired — silent failures had made the debugger arm more expensive.
 - Current-generation models barely confabulate runtime behavior on these tasks (0.2–0.7 unverified claims/run, debugger or not) — the "models hallucinate what code does" argument is weakening with model progress.
 - When the truth isn't in any readable file (a cross-service contract bug, other service's source unavailable), agents switch to runtime observation on their own — 5/5 read-arm runs probed the live service unprompted, something that never happened in ~200 single-repo runs.
@@ -21,7 +22,7 @@ Turn runtime observation into durable, trainable knowledge, so that agents under
 ## Assumptions
 
 - Reading ever stops *working* (as opposed to getting expensive): even at 1.7M lines the read-only agent still fixed 3/3 — no scale yet observed where the debugger changes correctness rather than cost.
-- The tsz crossover generalizes: 3 cases, one run per arm, one repo, and conditional on bug type (traceable emit-site bugs win, missing-diagnostic bugs lose).
+- The tsz crossover is driven by signal-to-cause distance rather than anything tsz-specific: our Kubernetes null result at 3.6M lines rules out repo size as the driver, but the distance explanation still rests on 3 tsz cases nobody has reproduced.
 - Enterprise pain concentrates in cross-service integration bugs that neither unit tests (which mock the other services) nor code reading can reach — plausible but untested; in our 2-service toy both arms fixed the bug 5/5.
 - Production traces can't substitute for debugging because they only cover code paths that were actually taken and don't allow exploratory execution.
 - The economic buyer cares enough about debugging/verification quality to fund infrastructure work (vs. accepting read-and-guess agents that already pass their tests).

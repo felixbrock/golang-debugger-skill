@@ -55,10 +55,24 @@ python3 repo/mine_cases.py /path/to/esbuild /tmp/gdbg-bench-esbuild 12
 python3 repo/run_repo.py   /path/to/esbuild /tmp/gdbg-bench-esbuild
 ```
 
-The harness resets the worktree to the fix's parent, overlays only the
+The harness builds a fresh single-commit checkout of the fix's parent (the
+fix is not in the object store; web tools are disabled), overlays only the
 test/snapshots, confirms red, runs the agent (without gdbg vs with it
 mandated), re-checks-out the overlay so test tampering can't fake a pass,
-and verifies. Results in `repo/runs.json`.
+and verifies. Results in `repo/runs.json` (first pass) and
+`repo/runs-clean.json` (hardened rerun, post-cutoff cases only).
+
+The same harness runs against [Kubernetes](https://github.com/kubernetes/kubernetes)
+(~3.6M lines of Go) to test whether the cost picture changes with codebase
+size — it doesn't (see FINDINGS). k8s lands PRs as merge commits, so cases
+are mined by `repo/mine_k8s.py` (merge commit diffed against its first
+parent) and live in `repo/cases-k8s.json`, results in `repo/runs-k8s.json`:
+
+```sh
+git clone https://github.com/kubernetes/kubernetes /var/tmp/gdbg-k8s
+python3 repo/mine_k8s.py /var/tmp/gdbg-k8s /var/tmp/gdbg-k8s-wt 10 2026-02-01
+python3 repo/run_repo.py /var/tmp/gdbg-k8s --cases-file cases-k8s.json --out runs-k8s.json
+```
 
 ## Terminology
 
@@ -118,9 +132,10 @@ thing that varies between conditions is *how the debugger is suggested*.
 
 - **tier 1** (`tasks/`, harness in `adopt/`) — small purpose-built modules
   (20–350 lines) with planted bugs.
-- **tier 2** (`repo/`) — real historical bugs in esbuild (~95k lines): the
-  worktree is rewound to the commit *before* each fix, only the regression
-  test is overlaid, and the agent must re-derive the fix.
+- **tier 2** (`repo/`) — real historical bugs in esbuild (~95k lines) and
+  Kubernetes (~3.6M lines): the workdir is rebuilt at the commit *before*
+  each fix, only the regression test is overlaid, and the agent must
+  re-derive the fix.
 
 ## Results
 

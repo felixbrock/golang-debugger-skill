@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tier-2 benchmark: real fixed esbuild bugs, reset to before the fix.
+"""Tier-2 benchmark: real fixed bugs from a large Go repo, reset to before the fix.
 
 Contamination-isolated, mirroring the rust-debugger-skill tsz method:
 
@@ -17,8 +17,9 @@ Conditions: `without` (plain agent) vs `with` (go-debugger skill installed
 and runtime observation required in the prompt; a passive note yields ~0%
 adoption, see ../FINDINGS.md — this measures benefit-when-used).
 
-  python3 run_repo.py <esbuild-clone> [--cases N] [--since YYYY-MM]
-                      [--conditions without,with] [--only sha1,sha2]
+  python3 run_repo.py <clone> [--cases-file cases.json] [--cases N]
+                      [--since YYYY-MM] [--conditions without,with]
+                      [--only sha1,sha2]
 """
 
 from __future__ import annotations
@@ -33,15 +34,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SKILL = ROOT.parent.parent / "skill" / "go-debugger" / "SKILL.md"
-WORKROOT = Path("/tmp/gdbg-bench-repo2")
-OUTDIR = Path("/tmp/gdbg-bench-repo2-results")
+WORKROOT = Path(os.environ.get("GDBG_BENCH_WORK", "/var/tmp/gdbg-bench-repo2"))
+OUTDIR = Path(os.environ.get("GDBG_BENCH_OUT", "/var/tmp/gdbg-bench-repo2-results"))
 
 BASE_PROMPT = """A regression test in this repository fails:
 
     go test {pkgs}
 
 Diagnose the root cause and fix the source so that test passes. Do NOT modify
-any *_test.go file or anything under snapshots/ — fix the source. Keep the
+any *_test.go file or anything under snapshots/ or testdata/ — fix the source. Keep the
 change minimal and correct for the general case; this is a real behavior
 regression. The repository is large: only ever run the narrowed test command
 above, never the full suite."""
@@ -97,7 +98,7 @@ class Bench:
             (d / "SKILL.md").write_text(SKILL.read_text())
         return workdir
 
-    def verify(self, case, workdir: Path, timeout=420):
+    def verify(self, case, workdir: Path, timeout=900):
         self._overlay(case, workdir)  # tampered tests/snapshots can't fake a pass
         r = subprocess.run(["go", "test", *case["pkgs"]], cwd=workdir,
                            capture_output=True, text=True, timeout=timeout)
@@ -154,6 +155,7 @@ def one_run(bench: Bench, case, cond):
         shutil.copy(usage, OUTDIR / f"{case['sha'][:10]}-{cond}-usage.jsonl")
     subprocess.run(["pkill", "-f", "gdbg __daemon"], capture_output=True)
     subprocess.run(["pkill", "-f", "dlv "], capture_output=True)
+    shutil.rmtree(workdir, ignore_errors=True)  # large repos: ~1.3GB per workdir
     return {"case": case["sha"][:10], "date": case.get("date", "?"),
             "bug": case["bug"][:60], "cond": cond,
             "baseline_red": baseline_red, "passed": passed, "wall_s": wall, **info}
@@ -162,13 +164,14 @@ def one_run(bench: Bench, case, cond):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("clone")
+    ap.add_argument("--cases-file", default="cases.json")
     ap.add_argument("--cases", type=int, default=0)
     ap.add_argument("--since", default="", help="keep only cases with date >= this (YYYY-MM)")
     ap.add_argument("--only", default="", help="comma-separated sha prefixes")
     ap.add_argument("--conditions", default="without,with")
     ap.add_argument("--out", default="runs-clean.json")
     a = ap.parse_args()
-    cases = json.loads((ROOT / "cases.json").read_text())
+    cases = json.loads((ROOT / a.cases_file).read_text())
     if a.since:
         cases = [c for c in cases if c.get("date", "") >= a.since]
     if a.only:

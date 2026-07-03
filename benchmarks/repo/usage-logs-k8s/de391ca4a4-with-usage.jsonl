@@ -1,0 +1,6 @@
+{"ts":"2026-07-03T21:10:03Z","cmd":"launch","args":["--test","./pkg/kubelet/cm/cpumanager/state/","--break","state_checkpoint.go:175","--","-run","TestCheckpointStateRestore/PodLevelResourceManagers=false/Fail_to_restore_checkpoint_without_data_section"],"ok":true,"ms":3252}
+{"ts":"2026-07-03T21:10:09Z","cmd":"eval","args":["err.Error()"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:10:09Z","cmd":"eval","args":["len(checkpointV4.Data)"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:10:09Z","cmd":"eval","args":["checkpointV4.DataChecksum"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:10:13Z","cmd":"eval","args":["err"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:10:13Z","cmd":"quit","ok":false,"ms":0,"err":"unknown command \"quit\"; run gdbg with no arguments for help"}

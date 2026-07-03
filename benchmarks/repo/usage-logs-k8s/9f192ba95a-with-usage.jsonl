@@ -1,0 +1,18 @@
+{"ts":"2026-07-03T21:34:56Z","cmd":"launch","args":["--test","./pkg/scheduler/framework/plugins/dynamicresources/","--break","dra_manager.go:278","--","-run","TestPlugin/bind-failure-preserves-inflight-until-unreserve"],"ok":true,"ms":26383}
+{"ts":"2026-07-03T21:35:26Z","cmd":"eval","args":["inFlight.sharers","forceRemove"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:26Z","cmd":"bt","args":["--depth","6"],"ok":true,"ms":1}
+{"ts":"2026-07-03T21:35:31Z","cmd":"frame","args":["1"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:31Z","cmd":"eval","args":["resourceClaimModified","forceRemovePendingAllocation","allocation != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:34Z","cmd":"eval","args":["resourceClaimModified"],"ok":true,"ms":1}
+{"ts":"2026-07-03T21:35:34Z","cmd":"eval","args":["forceRemovePendingAllocation"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:34Z","cmd":"eval","args":["allocation != nil"],"ok":true,"ms":11}
+{"ts":"2026-07-03T21:35:39Z","cmd":"continue","ok":true,"ms":1004}
+{"ts":"2026-07-03T21:35:40Z","cmd":"eval","args":["inFlight.sharers"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:40Z","cmd":"eval","args":["forceRemove"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:35:40Z","cmd":"bt","args":["--depth","4"],"ok":false,"ms":0,"err":"Process 3367763 has exited with status 1"}
+{"ts":"2026-07-03T21:40:36Z","cmd":"launch","args":["--test","./pkg/scheduler/framework/plugins/dynamicresources/","--break","dynamicresources.go:1523","--break","dynamicresources.go:1519","--","-run","TestPlugin/bind-claim-with-binding-conditions"],"ok":true,"ms":2892}
+{"ts":"2026-07-03T21:40:45Z","cmd":"continue","ok":true,"ms":29}
+{"ts":"2026-07-03T21:40:45Z","cmd":"eval","args":["forceRemovePendingAllocation"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:40:45Z","cmd":"eval","args":["resourceClaimModified"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:40:45Z","cmd":"eval","args":["claim.Status.Allocation.Devices.Results[0].BindingConditions"],"ok":true,"ms":0}
+{"ts":"2026-07-03T21:43:15Z","cmd":"stop","ok":true,"ms":2}

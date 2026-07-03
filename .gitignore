@@ -11,3 +11,7 @@ tmp_msg.md
 tmp_msg.md
 benchmarks/repo/run_clean.log
 benchmarks/repo/runs-pilot.json
+benchmarks/repo/mine_k8s.log
+benchmarks/repo/run_k8s.log
+benchmarks/repo/run_k8s_pilot.log
+benchmarks/repo/runs-k8s-pilot.json

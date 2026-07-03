@@ -1,0 +1,5 @@
+{"ts":"2026-07-03T20:28:41Z","cmd":"launch","args":["--test","./pkg/kubelet/nodeshutdown/","--break","nodeshutdown_manager_linux.go:190","--","-run","TestStartDbusConnectionClosedOnError"],"ok":true,"ms":36610}
+{"ts":"2026-07-03T20:39:22Z","cmd":"eval","args":["systemBus"],"ok":true,"ms":2}
+{"ts":"2026-07-03T20:39:22Z","cmd":"eval","args":["m.dbusCon"],"ok":true,"ms":1}
+{"ts":"2026-07-03T20:39:27Z","cmd":"quit","ok":false,"ms":0,"err":"unknown command \"quit\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-03T20:39:31Z","cmd":"stop","ok":true,"ms":1}

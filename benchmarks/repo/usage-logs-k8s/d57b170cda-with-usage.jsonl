@@ -1,0 +1,13 @@
+{"ts":"2026-07-03T20:57:58Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/heap/","--break","heap.go:125","--break","heap.go:139","--","-run","TestHeapWithRecorder"],"ok":true,"ms":3016}
+{"ts":"2026-07-03T20:58:05Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/heap/","--break","pkg/scheduler/backend/heap/heap.go:125","--break","pkg/scheduler/backend/heap/heap.go:139","--","-run","TestHeapWithRecorder"],"ok":true,"ms":637}
+{"ts":"2026-07-03T20:58:10Z","cmd":"continue","ok":true,"ms":3}
+{"ts":"2026-07-03T20:58:13Z","cmd":"eval","args":["h.data.queue[idx].obj.size","obj.size","*h.metricRecorder"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:16Z","cmd":"eval","args":["h.data.queue[idx].obj.size"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:16Z","cmd":"eval","args":["obj.size"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:16Z","cmd":"eval","args":["*h.metricRecorder"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:20Z","cmd":"eval","args":["h.metricRecorder"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:23Z","cmd":"continue","ok":true,"ms":3}
+{"ts":"2026-07-03T20:58:25Z","cmd":"eval","args":["obj.size"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:25Z","cmd":"eval","args":["h.data.queue[idx].obj.size"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:25Z","cmd":"eval","args":["h.metricRecorder"],"ok":true,"ms":0}
+{"ts":"2026-07-03T20:58:34Z","cmd":"stop","ok":true,"ms":1}

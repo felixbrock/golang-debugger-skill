@@ -1,0 +1,3 @@
+{"ts":"2026-07-03T21:02:40Z","cmd":"launch","args":["--test","./pkg/controller/job/","--break","job_controller.go:1823","--","-run","TestControllerSyncJob/too_few_active_pods_and_active_back-off_with_running_pods"],"ok":true,"ms":29437}
+{"ts":"2026-07-03T21:03:12Z","cmd":"eval","args":["active","wantActive","terminating","diff","remainingTime"],"ok":true,"ms":1}
+{"ts":"2026-07-03T21:03:17Z","cmd":"stop","ok":true,"ms":1}
