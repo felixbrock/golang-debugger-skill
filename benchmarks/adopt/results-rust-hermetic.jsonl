@@ -1,0 +1,10 @@
+{"condition": "strong", "idx": "0", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 137821, "wall_s": 28.4, "passed": true}
+{"condition": "strong", "idx": "1", "used_rdbg": true, "rdbg_calls": 3, "first_tool": "Bash", "tokens": 209240, "wall_s": 42.4, "passed": true}
+{"condition": "strong", "idx": "2", "used_rdbg": true, "rdbg_calls": 2, "first_tool": "Bash", "tokens": 185817, "wall_s": 46.2, "passed": true}
+{"condition": "strong", "idx": "3", "used_rdbg": true, "rdbg_calls": 2, "first_tool": "Bash", "tokens": 193366, "wall_s": 42.5, "passed": true}
+{"condition": "strong", "idx": "4", "used_rdbg": true, "rdbg_calls": 3, "first_tool": "Bash", "tokens": 208586, "wall_s": 42.7, "passed": true}
+{"condition": "control", "idx": "0", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 155477, "wall_s": 36.0, "passed": true}
+{"condition": "control", "idx": "1", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 110731, "wall_s": 23.0, "passed": true}
+{"condition": "control", "idx": "2", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 108901, "wall_s": 17.2, "passed": true}
+{"condition": "control", "idx": "3", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 109489, "wall_s": 29.2, "passed": true}
+{"condition": "control", "idx": "4", "used_rdbg": false, "rdbg_calls": 0, "first_tool": "Bash", "tokens": 109314, "wall_s": 17.2, "passed": true}

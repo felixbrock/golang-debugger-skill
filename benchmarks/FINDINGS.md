@@ -55,7 +55,8 @@ config; `GDBG_HERMETIC` in the harness) as well as under the host config
 | strong | host config + stale session memory | **0/5** | 122k |
 | gate | hermetic | **5/5** | 165k |
 | gate | host personal config | **5/5** | 249k |
-| *strong (Rust study, their machine)* | *unknown host config* | *5/5* | *386k* |
+| *strong, Rust task (their machine)* | *unknown host config* | *5/5* | *386k* |
+| *strong, Rust task (our machine)* | *hermetic* | ***4/5*** | *187k* |
 
 Three regimes, cleanly separated:
 
@@ -75,6 +76,35 @@ The host config also taxes everything uniformly: hermetic control runs cost
 host's skills/plugins/MCP being carried in the system prompt). Ratios
 within a study survive this; absolute token comparisons across machines do
 not.
+
+### Cross-language control: the mandate is not technology-independent
+
+To separate language from machine, we ran the **Rust study's own harness and
+accumulator task on our machine, hermetically** (rustup + rust-analyzer +
+lldb-dap installed locally, rdbg built from their repo, pristine
+`CLAUDE_CONFIG_DIR`; raw data in `results-rust-hermetic.jsonl`). Everything
+equal except the language and debugger:
+
+- Go strong, hermetic, this machine: **1/5** adoption (142k mean tokens)
+- Rust strong, hermetic, this machine: **4/5** adoption (187k)
+- Rust strong, their machine, their config: 5/5 (386k)
+- Controls: 0/5 in all three settings; every run passed everywhere.
+
+Same model, same machine, same clean config, same prompt structure,
+near-identical planted bug — and the agent reaches for the debugger 4× more
+often in Rust. Pooled across environments the pattern holds (Rust strong
+9/10 vs Go strong 4/10). With n=5 cells this is suggestive rather than
+conclusive, but the direction is consistent: **the "reading is enough"
+override that neuters bare mandates fires more often in Go than in Rust** —
+plausibly because the model trusts its Go reading more. Adoption is a
+three-way function of instructions, ambient environment, *and* language;
+only the verifiable-artifact gate has been immune to all of them.
+
+The clean-room Rust runs also isolate what their host config had added:
+adopting runs there needed 2–3 rdbg calls at ~187k tokens versus 6–9 calls
+at ~386k in the original study — ambient context roughly doubled the
+debugging cost, mirroring (at larger scale) the gate-run inflation we
+measured on our own machine.
 
 The gate variant phrases the policy as a review gate with a reason: *fixes
 are rejected unless the reply quotes runtime values observed before the
@@ -204,9 +234,10 @@ most expensive — without ever beating it.
 1. Passive availability still yields ~0% adoption, across languages and model
    versions.
 2. Prompting controls adoption, with a gradient: bare workflow mandates are
-   unstable and ambient-context-sensitive (0–5/5 across environments on the
-   same model and prompt), while verifiable-artifact gates reach 5/5 in
-   every environment tested, including a hermetic one.
+   unstable — sensitive to ambient context (0–5/5 across environments on the
+   same model and prompt) *and to language* (Rust 4/5 vs Go 1/5 on the same
+   machine, hermetic) — while verifiable-artifact gates reach 5/5 in every
+   environment tested, including a hermetic one.
 3. Forced adoption still never beat reading on token cost at this task scale
    (best case ~1.3×, all cells 5/5 correct). The case for gdbg remains
    conditional: panics with unclear cause, state only visible at runtime,
