@@ -32,35 +32,55 @@ The original Rust numbers, for reference:
   in clean runs (adopting runs needed 1–2 gdbg calls) and partly because the
   current model uses the debugger surgically rather than exhaustively.
 
-## Mandates are advisory, artifacts are not
+## Mandates are advisory, artifacts are not — and ambient context is a confound
 
 The bare "MANDATORY, observe with the debugger before editing" `CLAUDE.md`
-that flipped Rust adoption to 5/5 only achieved **3/5** here, on both tasks —
-Opus sometimes treats it as advisory and decides reading is enough ("The bug
-is clear from the source"), at control-level cost. Both studies used the
-same model: the Rust repo's committed results (2026-07-02) show
-`claude-opus-4-8` and its harness passes `--model opus --effort medium`,
-identical to ours — so 5/5 vs 3/5 is within n=5 noise (and possibly
-language/tooling texture), not model drift.
+that flipped Rust adoption to 5/5 achieved 3/5 here — and probing WHY led to
+the sharpest result of the adoption study. Both studies used the same model
+(the Rust repo's committed results show `claude-opus-4-8`, `--model opus
+--effort medium`, identical to ours), so we tested the remaining variable:
+the **host machine's user-level Claude config** (global CLAUDE.md, personal
+skills, plugins, MCP servers), which loads into every nested benchmark run.
+Re-running cells hermetically (`CLAUDE_CONFIG_DIR` pointed at a pristine
+config; `GDBG_HERMETIC` in the harness) as well as under the host config
+(`results-followup.jsonl`, `results-hermetic.jsonl`):
 
-A follow-up on the easy bug (5 runs per condition, `results-followup.jsonl`)
-shows what reliably controls adoption:
-
-| condition | where the mandate lives | adoption | mean tokens |
+| condition | ambient context | adoption | mean tokens |
 |---|---|---|---|
-| strong | CLAUDE.md, bare workflow mandate | 3/5 | 158k |
-| **gate** | CLAUDE.md, *verifiable artifact + rationale* | **5/5** | 249k |
-| **prompt** | the user-turn task prompt itself | **5/5** | 284k |
-| control | one-line "skill available" note | 0/5 | 120k |
+| control | hermetic | 0/5 | 108k |
+| control | host personal config | 0/5 | 120k |
+| strong | hermetic | **1/5** | 142k |
+| strong | host personal config | **3/5** | 158k |
+| strong | host config + stale session memory | **0/5** | 122k |
+| gate | hermetic | **5/5** | 165k |
+| gate | host personal config | **5/5** | 249k |
+| *strong (Rust study, their machine)* | *unknown host config* | *5/5* | *386k* |
+
+Three regimes, cleanly separated:
+
+- **Passive notes are robustly 0/5** in every environment, both studies.
+- **Bare workflow mandates are unstable**: 0/5, 1/5, 3/5, 5/5 across
+  ambient-context variations of the *same* prompt on the *same* model. The
+  Rust study's 5/5 is best read as one more draw from this noisy
+  distribution on one more uncontrolled machine — not a property of the
+  language or the model.
+- **Artifact-gates are robustly 5/5** everywhere — including the clean
+  room, where they are also cheapest (165k, only 1.53× the hermetic
+  control; the host config had inflated gate runs to 249k and 3–6 gdbg
+  calls vs 1–2 hermetic).
+
+The host config also taxes everything uniformly: hermetic control runs cost
+108k vs 120k under the personal config (~11% of every measurement was the
+host's skills/plugins/MCP being carried in the system prompt). Ratios
+within a study survive this; absolute token comparisons across machines do
+not.
 
 The gate variant phrases the policy as a review gate with a reason: *fixes
-are rejected unless the reply quotes runtime values observed before the first
-edit, because read-only fixes have shipped confabulated root causes*. Every
-gate run complied — several noted "the bug is visible on reading, but the
-policy requires runtime observation" and quoted a `gdbg trace` table showing
-the odd elements being appended. Checkable artifact requirements and
-user-turn instructions flip adoption reliably; bare workflow prescriptions
-only sometimes do.
+are rejected unless the reply quotes runtime values observed before the
+first edit, because read-only fixes have shipped confabulated root causes*.
+Every gate run complied — several noted "the bug is visible on reading, but
+the policy requires runtime observation" and quoted a `gdbg trace` table
+showing the odd elements being appended.
 
 ## Methodology hazard: nested agents inherit the host project's context
 
@@ -177,10 +197,10 @@ most expensive — without ever beating it.
 
 1. Passive availability still yields ~0% adoption, across languages and model
    versions.
-2. Prompting controls adoption, with a gradient: bare workflow mandates get
-   partial compliance (3–5/5 across the Go and Rust studies, same model),
-   while verifiable-artifact gates and user-turn requirements reach 5/5
-   reliably.
+2. Prompting controls adoption, with a gradient: bare workflow mandates are
+   unstable and ambient-context-sensitive (0–5/5 across environments on the
+   same model and prompt), while verifiable-artifact gates reach 5/5 in
+   every environment tested, including a hermetic one.
 3. Forced adoption still never beat reading on token cost at this task scale
    (best case ~1.3×, all cells 5/5 correct). The case for gdbg remains
    conditional: panics with unclear cause, state only visible at runtime,

@@ -112,6 +112,12 @@ def main() -> None:
     (work / "CLAUDE.md").write_text(claude_md)
 
     env = dict(os.environ, PATH=f"{Path.home()}/.local/bin:{Path.home()}/go/bin:" + os.environ["PATH"])
+    # GDBG_HERMETIC=<dir>: run with a pristine user config (no global
+    # CLAUDE.md, personal skills, plugins, or MCP servers). The dir needs a
+    # copy of .credentials.json. Keeps host machine config out of the
+    # experiment — see FINDINGS.md "Methodology hazard".
+    if os.environ.get("GDBG_HERMETIC"):
+        env["CLAUDE_CONFIG_DIR"] = os.environ["GDBG_HERMETIC"]
     start = time.monotonic()
     try:
         p = subprocess.run(

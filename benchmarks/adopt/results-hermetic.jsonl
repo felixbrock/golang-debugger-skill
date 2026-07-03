@@ -1,0 +1,15 @@
+{"task": "accumulator", "condition": "strong", "idx": "0", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 108580, "wall_s": 19.2, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "1", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 155400, "wall_s": 23.8, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "2", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 154863, "wall_s": 27.2, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "3", "used_gdbg": true, "gdbg_calls": 1, "first_tool": "Bash", "tokens": 180136, "wall_s": 35.8, "passed": true}
+{"task": "accumulator", "condition": "strong", "idx": "4", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 109982, "wall_s": 17.8, "passed": true}
+{"task": "accumulator", "condition": "control", "idx": "0", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 107490, "wall_s": 19.2, "passed": true}
+{"task": "accumulator", "condition": "control", "idx": "1", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 107570, "wall_s": 18.6, "passed": true}
+{"task": "accumulator", "condition": "control", "idx": "2", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 107731, "wall_s": 18.8, "passed": true}
+{"task": "accumulator", "condition": "control", "idx": "3", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 108251, "wall_s": 21.1, "passed": true}
+{"task": "accumulator", "condition": "control", "idx": "4", "used_gdbg": false, "gdbg_calls": 0, "first_tool": "Bash", "tokens": 107501, "wall_s": 17.8, "passed": true}
+{"task": "accumulator", "condition": "gate", "idx": "0", "used_gdbg": true, "gdbg_calls": 2, "first_tool": "Bash", "tokens": 187242, "wall_s": 30.9, "passed": true}
+{"task": "accumulator", "condition": "gate", "idx": "1", "used_gdbg": true, "gdbg_calls": 2, "first_tool": "Bash", "tokens": 158628, "wall_s": 30.0, "passed": true}
+{"task": "accumulator", "condition": "gate", "idx": "2", "used_gdbg": true, "gdbg_calls": 1, "first_tool": "Bash", "tokens": 163136, "wall_s": 36.0, "passed": true}
+{"task": "accumulator", "condition": "gate", "idx": "3", "used_gdbg": true, "gdbg_calls": 2, "first_tool": "Bash", "tokens": 158618, "wall_s": 28.4, "passed": true}
+{"task": "accumulator", "condition": "gate", "idx": "4", "used_gdbg": true, "gdbg_calls": 2, "first_tool": "Bash", "tokens": 158464, "wall_s": 35.9, "passed": true}
