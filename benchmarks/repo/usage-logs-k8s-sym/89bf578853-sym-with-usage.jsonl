@@ -1,0 +1,21 @@
+{"ts":"2026-07-04T00:51:41Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/cache","--break","cache.go:859","--","-run","TestRepro_ResurrectAfterDelete"],"ok":true,"ms":14878}
+{"ts":"2026-07-04T00:52:01Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/cache","--break-fn","k8s.io/kubernetes/pkg/scheduler/backend/cache.(*cacheImpl).assumePodGroupMember","--","-run","TestRepro_ResurrectAfterDelete"],"ok":true,"ms":1970}
+{"ts":"2026-07-04T00:52:08Z","cmd":"eval","args":["len(cache.podGroupStates)"],"ok":true,"ms":1}
+{"ts":"2026-07-04T00:52:08Z","cmd":"eval","args":["cache.podGroupStates[newPodGroupKey(pod.Namespace,","*pod.Spec.SchedulingGroup.PodGroupName)]"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:08Z","cmd":"until","args":["cache.go:865"],"ok":true,"ms":2}
+{"ts":"2026-07-04T00:52:08Z","cmd":"eval","args":["len(cache.podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:08Z","cmd":"do","args":["eval len(cache.podGroupStates); eval cache.podGroupStates[newPodGroupKey(pod.Namespace, *pod.Spec.SchedulingGroup.PodGroupName)]; until cache.go:865; eval len(cache.podGroupStates)"],"ok":true,"ms":5}
+{"ts":"2026-07-04T00:52:14Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/cache","--break","cache.go:860","--","-run","TestRepro_ResurrectAfterDelete"],"ok":true,"ms":1855}
+{"ts":"2026-07-04T00:52:16Z","cmd":"eval","args":["exists"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:16Z","cmd":"eval","args":["len(cache.podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:16Z","cmd":"step","args":["out"],"ok":false,"ms":0,"err":"program has exited; use restart or launch"}
+{"ts":"2026-07-04T00:52:16Z","cmd":"do","args":["eval exists; eval len(cache.podGroupStates); step out; eval len(cache.podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:22Z","cmd":"launch","args":["--test","./pkg/scheduler/backend/cache","--break-fn","k8s.io/kubernetes/pkg/scheduler/backend/cache.(*cacheImpl).assumePodGroupMember","--","-run","TestRepro_ResurrectAfterDelete"],"ok":true,"ms":2083}
+{"ts":"2026-07-04T00:52:24Z","cmd":"step","args":["over"],"ok":true,"ms":7}
+{"ts":"2026-07-04T00:52:24Z","cmd":"step","args":["over"],"ok":true,"ms":6}
+{"ts":"2026-07-04T00:52:24Z","cmd":"eval","args":["exists"],"ok":true,"ms":2}
+{"ts":"2026-07-04T00:52:24Z","cmd":"eval","args":["len(cache.podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:24Z","cmd":"step","args":["out"],"ok":true,"ms":9}
+{"ts":"2026-07-04T00:52:24Z","cmd":"eval","args":["len(cache.podGroupStates)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T00:52:24Z","cmd":"do","args":["step over; step over; eval exists; eval len(cache.podGroupStates); step out; eval len(cache.podGroupStates)"],"ok":true,"ms":26}
+{"ts":"2026-07-04T00:52:52Z","cmd":"stop","ok":true,"ms":1}

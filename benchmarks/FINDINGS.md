@@ -13,14 +13,15 @@ Go 1.26.
 
 ## The headline result
 
-**The agent never needed the debugger.** It fixed every bug in every
-condition — small planted bugs, hard multi-file bugs, 12 real historical
-esbuild bugs, and 10 real historical Kubernetes bugs in a 3.6M-line repo —
-by reading the code. Using the debugger never improved correctness and
-always cost more tokens (1.24–1.9× on clean measurements). The extra cost
-shrinks where the failing signal localizes badly, but on our cases it never
-became a saving — not even at Kubernetes scale (see the crossover sections
-for where it does).
+**As long as the agent is handed a failing test, it never needs the
+debugger.** It fixed every bug in every condition — small planted bugs,
+hard multi-file bugs, 12 real historical esbuild bugs, and 10 real
+historical Kubernetes bugs in a 3.6M-line repo — by reading the code, and
+mandated debugging only added cost (1.24–1.9× on clean measurements).
+That qualifier turned out to be the whole story: when we removed the
+failing tests and gave agents only the original bug reports (the
+symptom-only rerun below), correctness finally differentiated — in both
+directions — and costs exploded fivefold for everyone.
 
 ## Both experiments, side by side
 
@@ -267,6 +268,73 @@ the debugger has nothing to sell. Caveat: one run per case per arm, and
 single runs vary ±30% — the 0/10 and the halved read cost are the robust
 part, not any individual ratio.
 
+### Symptom-only rerun: remove the test, and everything changes
+
+A fair objection to every tier-2 number above: the regression test we
+hand the agent was written by the human who had already diagnosed the
+bug. It encodes their answer — at diagnosis time it didn't exist, and if
+you can write that test, you've already done the debugging. So we reran
+the Kubernetes cases in diagnosis-time conditions: the agent gets only a
+curated bug report (the real GitHub issue where one exists — a pprof
+dump, a panic trace, a 422 log line; operator-voice distillations
+otherwise), the regression test never enters its workdir, and the hidden
+test is used purely for verification afterward. 9 of the 10 cases have
+an honest symptom (the cpumanager case is an error-message cleanup and
+was dropped). Same hardened isolation. `sym-*` conditions,
+`repo/runs-k8s-sym.json`; symptoms in `repo/cases-k8s.json`.
+
+The solved-everything era ended immediately:
+
+- Cost exploded for everyone: the read arm went from 509k mean tokens
+  (test given) to 2.64M (symptom only) — the localization the tests had
+  been doing for free is worth ~5× the whole prior task cost. The
+  debugger arm went 954k → 4.44M.
+- Raw scores: read-only **6/9**, debugger-mandated **4/9** plus one
+  45-minute timeout. First failed runs in ~90 tier-2 runs.
+- We then audited every failed run against the real fix (reconstructing
+  the agent's edits from transcripts). 3 of the 7 failures were
+  verification artifacts, not agent failures: the hidden upstream test
+  calls a helper method that only exists in upstream's own patch (so any
+  alternative fix can't even compile), or asserts a second defensive
+  hunk beyond the reported bug. Scoring "did the agent actually fix the
+  reported bug": read-only **8/9**, debugger-mandated **5/9**.
+
+So with honest inputs, mandated debugging made correctness *worse* on
+net — but the case-level detail is more interesting than the score:
+
+- The debugger scored the first correctness win of the entire study
+  (kube-reserved config): the read-only agent pattern-matched the
+  symptom to a *different* real Kubernetes bug it apparently knew,
+  fixed that, and argued away the actual report; the debugger arm
+  observed the real values disagreeing at runtime and landed the right
+  fix. Observation beat a confident wrong prior — the exact failure
+  mode debugging is supposed to prevent.
+- The debugger arm's three genuine failures share one shape, and it
+  isn't bad diagnosis — twice the diagnosis was *correct and
+  evidence-backed*. They are repair failures: the agent fixed exactly
+  the code path it had watched. One canceled a context that other
+  goroutines still held (right leak, repair breaks probing); one gated
+  the fix on the precise error path it had reproduced, leaving sibling
+  paths of the same bug class broken; one patched the vendored library
+  at the bottom of the observed stack instead of the owning error path
+  above it. Call it evidence anchoring: runtime facts are locally true
+  and globally incomplete, and a mandate to observe seems to tether the
+  fix to the observed path. (n=3 — a pattern to test, not a law.)
+- The timeout run wasn't debugger thrash either: its usage log shows a
+  clean 71-second session that observed exactly the right state
+  (`len(cache.podGroupStates)` across the forget path), after which the
+  run spent 40 minutes failing to converge on a repair.
+- Benchmark-design lesson we now apply to our own earlier claims: hidden
+  upstream regression tests over-reject alternative fixes (3 of 7 here).
+  Fix rates measured this way are floors, and "the debugger arm failed"
+  claims need a transcript audit before they mean anything.
+
+Where this leaves the cost story: reading still wins on tokens (2.64M vs
+4.44M mean), and the with-arm's two most expensive runs (9.8M, 18.8M)
+were symptom-only debugger runs. But the regime is now the right one —
+real bug reports, no oracle test — and in it the debugger changed
+*outcomes*, both ways, for the first time.
+
 ## Which debugger features agents actually use (usage telemetry)
 
 The daemon now logs every command it executes to `.gdbg/usage.jsonl`
@@ -410,17 +478,24 @@ Two lessons:
 3. For fixing bugs, the debugger never beat reading on any bug whose
    failing test localized the cause — not at 20 lines, not at 95k
    (esbuild, 1.24×), not at 3.6M (Kubernetes, 1.88×, 0/10 wins). The Rust
-   project's tsz result shows where it does win (−49%/−70%): bugs whose
-   symptom is far from its cause, where reading thrashes for tens of
-   millions of tokens. The variable is signal-to-cause distance, not
-   codebase size; fix rates are identical everywhere either way.
-4. The debugger's real, measured value is evidence quality: runs contain
+   project's tsz result shows where it wins on cost (−49%/−70%): bugs
+   whose symptom is far from its cause, where reading thrashes. The
+   variable is signal-to-cause distance, not codebase size.
+4. With a failing test given, fix rates are identical everywhere — the
+   test is doing the diagnosis. Remove it (symptom-only rerun: real bug
+   reports, hidden verification) and correctness finally differentiates:
+   read-only 8/9, debugger-mandated 5/9 after auditing. Observation won
+   outright once (beating a confident wrong prior that reading never
+   questioned), and lost three times to evidence anchoring — fixes
+   tethered to the exact path the agent had observed. Forced observation
+   changes outcomes, in both directions.
+5. The debugger's real, measured value is evidence quality: runs contain
    ~3× more observed fact. But most forced observation is decorative; on
    real bugs only ~25% of sessions produced an observation that genuinely
    drove the fix. Anything built on debugger data — verification gates,
    knowledge bases, RL training — stands or falls on filtering the genuine
    sessions from the theater.
-5. Where reading is structurally impossible (a cross-service contract bug
+6. Where reading is structurally impossible (a cross-service contract bug
    with the other service's source unavailable), agents switch to
    observation on their own — but the cheapest correct observation was the
    service *boundary* (one curl), not in-process debugging, because the

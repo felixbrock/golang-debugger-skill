@@ -1,0 +1,11 @@
+{"ts":"2026-07-03T23:22:32Z","cmd":"launch","args":["--test","staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity","--break","staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity/nodeaffinity.go:58","--","-run","TestNilNodeSelectorRepro"],"ok":false,"ms":79,"err":"dlv exited before serving:\n# staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity\npackage staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity is not in std (/usr/local/go/src/staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity)\nFAIL\tstaging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity [setup failed]\nFAIL\nexit status 1"}
+{"ts":"2026-07-03T23:22:38Z","cmd":"launch","args":["--test","./staging/src/k8s.io/component-helpers/scheduling/corev1/nodeaffinity","--break","nodeaffinity.go:58","--","-run","TestNilNodeSelectorRepro"],"ok":true,"ms":3680}
+{"ts":"2026-07-03T23:22:47Z","cmd":"eval","args":["ns == nil","ns"],"ok":true,"ms":0}
+{"ts":"2026-07-03T23:22:47Z","cmd":"step","args":["over"],"ok":true,"ms":13}
+{"ts":"2026-07-03T23:22:47Z","cmd":"eval","args":["len(ns.NodeSelectorTerms)"],"ok":true,"ms":1}
+{"ts":"2026-07-03T23:22:47Z","cmd":"do","args":["step over; eval len(ns.NodeSelectorTerms)"],"ok":true,"ms":14}
+{"ts":"2026-07-03T23:22:51Z","cmd":"eval","args":["ns==nil"],"ok":true,"ms":1}
+{"ts":"2026-07-03T23:22:51Z","cmd":"bt","ok":true,"ms":1}
+{"ts":"2026-07-03T23:22:55Z","cmd":"frame","args":["4"],"ok":true,"ms":0}
+{"ts":"2026-07-03T23:22:55Z","cmd":"eval","args":["ns"],"ok":true,"ms":0}
+{"ts":"2026-07-03T23:22:55Z","cmd":"stop","ok":true,"ms":201}

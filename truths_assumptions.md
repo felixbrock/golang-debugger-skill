@@ -7,7 +7,12 @@ Turn runtime observation into durable, trainable knowledge, so that agents under
 ## Truths
 
 - Coding agents default to read-and-guess: a passively available debugger gets used in 0% of runs (0/30 controls, two languages).
-- Wherever the failing signal localizes the bug, reading is sufficient at any repo size: read-only agents fixed 100% of ~70 benchmark bugs, including 10/10 real Kubernetes bugs in a 3.6M-line repo, cheaper on average than debugger runs.
+- Wherever a failing test localizes the bug, reading is sufficient at any repo size: read-only agents fixed 100% of ~70 test-given benchmark bugs, including 10/10 real Kubernetes bugs in a 3.6M-line repo, cheaper on average than debugger runs.
+- A fix-commit regression test is a post-hoc oracle: it encodes the fixer's finished diagnosis, so test-given benchmarks measure repair, not diagnosis — removing the tests (real bug reports only) exploded read costs 5× and broke the 100% fix rate for the first time.
+- In diagnosis-time conditions correctness finally differentiates, in both directions: audited scores are read-only 8/9 vs debugger-mandated 5/9 on the same 9 Kubernetes bugs.
+- Runtime observation can beat a confident wrong prior: the study's single debugger correctness win came when the read-only agent pattern-matched the symptom to a different known bug and argued away the report, while the debugger arm observed the real values and fixed the right thing.
+- Mandated observation carries a repair risk we call evidence anchoring: all three genuine debugger-arm failures fixed exactly the code path the agent had watched (two with correct, evidence-backed diagnoses), missing the invariant or breaking a neighbor (n=3 — pattern, not law).
+- Upstream regression tests over-reject alternative fixes: 3 of 7 symptom-arm "failures" were verification artifacts (the hidden test demanded upstream's own API shape or its defensive extra hunks), so hidden-test fix rates are floors without a transcript audit.
 - Telling the agent to use the debugger doesn't work reliably: plain orders score 0–5/5 depending on ambient machine context and programming language.
 - Whatever an agent learns at runtime is thrown away when the session ends — there is no persistence mechanism today.
 - Written knowledge bases are ignored: agents skip docs even when instructed to read them, mirroring the 0% passive-tool adoption.
@@ -21,7 +26,7 @@ Turn runtime observation into durable, trainable knowledge, so that agents under
 
 ## Assumptions
 
-- Reading ever stops *working* (as opposed to getting expensive): even at 1.7M lines the read-only agent still fixed 3/3 — no scale yet observed where the debugger changes correctness rather than cost.
+- Reading breaks down at scale: partially resolved — with a failing test it never breaks (3/3 at 1.7M, 10/10 at 3.6M); without one it finally does (8/9 audited), and the one genuine read failure was a wrong-prior fix that observation would have (and did) catch.
 - The tsz crossover is driven by signal-to-cause distance rather than anything tsz-specific: our Kubernetes null result at 3.6M lines rules out repo size as the driver, but the distance explanation still rests on 3 tsz cases nobody has reproduced.
 - Enterprise pain concentrates in cross-service integration bugs that neither unit tests (which mock the other services) nor code reading can reach — plausible but untested; in our 2-service toy both arms fixed the bug 5/5.
 - Production traces can't substitute for debugging because they only cover code paths that were actually taken and don't allow exploratory execution.

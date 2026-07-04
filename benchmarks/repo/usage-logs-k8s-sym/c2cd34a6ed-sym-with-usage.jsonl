@@ -1,0 +1,7 @@
+{"ts":"2026-07-04T01:18:11Z","cmd":"launch","args":["--test","./pkg/controller/job/","--break","job_controller.go:1825","--","-run","TestReproBackoffActiveReady"],"ok":true,"ms":31325}
+{"ts":"2026-07-04T01:18:45Z","cmd":"eval","args":["active"],"ok":true,"ms":4}
+{"ts":"2026-07-04T01:18:45Z","cmd":"eval","args":["jobCtx.ready"],"ok":true,"ms":0}
+{"ts":"2026-07-04T01:18:45Z","cmd":"eval","args":["wantActive"],"ok":true,"ms":0}
+{"ts":"2026-07-04T01:18:45Z","cmd":"eval","args":["diff"],"ok":true,"ms":0}
+{"ts":"2026-07-04T01:18:45Z","cmd":"eval","args":["remainingTime"],"ok":true,"ms":0}
+{"ts":"2026-07-04T01:18:50Z","cmd":"kill","ok":true,"ms":1}

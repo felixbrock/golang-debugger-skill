@@ -15,3 +15,6 @@ benchmarks/repo/mine_k8s.log
 benchmarks/repo/run_k8s.log
 benchmarks/repo/run_k8s_pilot.log
 benchmarks/repo/runs-k8s-pilot.json
+benchmarks/repo/run_k8s_sym.log
+benchmarks/repo/run_k8s_sym_pilot.log
+benchmarks/repo/runs-k8s-sym-pilot.json

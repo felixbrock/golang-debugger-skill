@@ -17,6 +17,12 @@ Conditions: `without` (plain agent) vs `with` (go-debugger skill installed
 and runtime observation required in the prompt; a passive note yields ~0%
 adoption, see ../FINDINGS.md — this measures benefit-when-used).
 
+`sym-without` / `sym-with` are the diagnosis-time variants: the agent gets
+only a curated bug report (the `symptom` field, distilled from the real
+GitHub issue — observable behavior only), the regression test is never
+placed in its workdir, and the hidden test is used purely for verification.
+This removes the post-hoc localization that a fix-commit test provides.
+
   python3 run_repo.py <clone> [--cases-file cases.json] [--cases N]
                       [--since YYYY-MM] [--conditions without,with]
                       [--only sha1,sha2]
@@ -59,6 +65,33 @@ Before your first edit, run the failing test under it —
 — and quote the observed runtime values that identify the root cause in your
 answer. Do not edit any file before you have observed and quoted those values."""
 
+SYMPTOM_PROMPT = """Bug report filed against this repository:
+
+---
+{symptom}
+---
+
+Diagnose the root cause and fix it in the source. There is no failing test to
+start from — reproduce and diagnose however you need. Keep the change minimal
+and correct for the general case; this is a real reported bug. Do NOT modify
+any existing *_test.go file or anything under testdata/ (adding a new test of
+your own is fine). The repository is large: never run a full test suite;
+narrow every build or test command to specific packages."""
+
+SYM_GDBG_NOTE = """
+
+Requirement: diagnose at runtime before editing. This project ships `gdbg`, a
+runtime debugger (run `gdbg` for usage; see .claude/skills/go-debugger).
+Before your first source edit, observe the failing behavior live — write a
+minimal reproducer test if none exists, run it under gdbg —
+
+    gdbg launch --test <pkg> --break <file>:<line> -- -run <TestName>
+    gdbg vars / gdbg eval <expr> / gdbg bt / gdbg trace … --capture <vars>
+
+— and quote the observed runtime values that identify the root cause in your
+answer. Do not edit any non-test file before you have observed and quoted
+those values."""
+
 
 def git(cwd, *args, check=False):
     r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
@@ -78,8 +111,9 @@ class Bench:
             r = git(self.clone, "show", f"{case['sha']}:{rel}")
             dst.write_text(r.stdout)
 
-    def build_workdir(self, case, with_skill: bool) -> Path:
-        workdir = WORKROOT / f"{case['sha'][:10]}-{'with' if with_skill else 'without'}"
+    def build_workdir(self, case, cond: str) -> Path:
+        with_skill = cond in ("with", "sym-with")
+        workdir = WORKROOT / f"{case['sha'][:10]}-{cond}"
         if workdir.exists():
             shutil.rmtree(workdir)
         workdir.mkdir(parents=True)
@@ -87,7 +121,8 @@ class Bench:
         archive = subprocess.run(["git", "archive", case["parent"]],
                                  cwd=self.clone, capture_output=True)
         subprocess.run(["tar", "-x"], cwd=workdir, input=archive.stdout, check=True)
-        self._overlay(case, workdir)
+        if not cond.startswith("sym"):
+            self._overlay(case, workdir)  # sym-*: the regression test stays hidden
         git(workdir, "init", "-q", check=True)
         git(workdir, "add", "-A", check=True)
         git(workdir, "-c", "user.email=bench@local", "-c", "user.name=bench",
@@ -141,11 +176,20 @@ class Bench:
 
 
 def one_run(bench: Bench, case, cond):
-    workdir = bench.build_workdir(case, with_skill=cond == "with")
-    baseline_red = not bench.verify(case, workdir)
-    prompt = BASE_PROMPT.format(pkgs=" ".join(case["pkgs"]))
-    if cond == "with":
-        prompt += GDBG_NOTE.format(pkg=case["pkgs"][0])
+    workdir = bench.build_workdir(case, cond)
+    if cond.startswith("sym"):
+        # verify() would write the hidden test into the agent's workdir; red at
+        # the parent was already validated at mining time and in the test-given
+        # batch, so don't re-check it here.
+        baseline_red = True
+        prompt = SYMPTOM_PROMPT.format(symptom=case["symptom"])
+        if cond == "sym-with":
+            prompt += SYM_GDBG_NOTE
+    else:
+        baseline_red = not bench.verify(case, workdir)
+        prompt = BASE_PROMPT.format(pkgs=" ".join(case["pkgs"]))
+        if cond == "with":
+            prompt += GDBG_NOTE.format(pkg=case["pkgs"][0])
     start = time.monotonic()
     info = bench.run_agent(workdir, prompt, OUTDIR / f"{case['sha'][:10]}-{cond}.jsonl")
     wall = round(time.monotonic() - start, 1)
@@ -171,7 +215,10 @@ def main():
     ap.add_argument("--conditions", default="without,with")
     ap.add_argument("--out", default="runs-clean.json")
     a = ap.parse_args()
+    conds = a.conditions.split(",")
     cases = json.loads((ROOT / a.cases_file).read_text())
+    if any(c.startswith("sym") for c in conds):
+        cases = [c for c in cases if c.get("symptom")]
     if a.since:
         cases = [c for c in cases if c.get("date", "") >= a.since]
     if a.only:
@@ -184,7 +231,7 @@ def main():
 
     rows = []
     for case in cases:
-        for cond in a.conditions.split(","):
+        for cond in conds:
             print(f"[{time.strftime('%H:%M:%S')}] {case['sha'][:10]} / {cond} — {case['bug'][:60]}", flush=True)
             row = one_run(bench, case, cond)
             print(f"  -> red={row['baseline_red']} passed={row['passed']} "
@@ -193,8 +240,8 @@ def main():
             (ROOT / a.out).write_text(json.dumps(rows, indent=2) + "\n")
 
     valid = [r for r in rows if r["baseline_red"]]
-    print("\n=== with vs without (means over red-baseline runs) ===")
-    for cond in ("without", "with"):
+    print("\n=== condition means (over red-baseline runs) ===")
+    for cond in conds:
         g = [r for r in valid if r["cond"] == cond]
         if not g:
             continue

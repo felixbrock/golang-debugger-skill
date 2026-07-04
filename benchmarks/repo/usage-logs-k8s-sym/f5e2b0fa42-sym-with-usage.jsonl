@@ -1,0 +1,6 @@
+{"ts":"2026-07-03T23:38:02Z","cmd":"launch","args":["--test","./pkg/kubelet","--break","pkg/kubelet/pod_workers.go:1155","--","-run","TestPodWorkerContextLeak"],"ok":true,"ms":62673}
+{"ts":"2026-07-03T23:39:10Z","cmd":"continue","ok":true,"ms":60}
+{"ts":"2026-07-03T23:39:10Z","cmd":"eval","args":["status.cancelFn","status.cancelFn != nil"],"ok":true,"ms":0}
+{"ts":"2026-07-03T23:39:19Z","cmd":"eval","args":["status.cancelFn != nil"],"ok":true,"ms":10}
+{"ts":"2026-07-03T23:39:19Z","cmd":"eval","args":["parentCtx"],"ok":true,"ms":1}
+{"ts":"2026-07-03T23:39:26Z","cmd":"stop","ok":true,"ms":2}

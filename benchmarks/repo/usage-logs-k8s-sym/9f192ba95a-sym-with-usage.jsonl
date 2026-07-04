@@ -1,0 +1,17 @@
+{"ts":"2026-07-04T02:05:14Z","cmd":"launch","args":["--test","./pkg/scheduler/framework/plugins/dynamicresources","--break","dra_manager.go:266","--","-run","TestPodGroupBindConflictInFlightLeak"],"ok":true,"ms":18069}
+{"ts":"2026-07-04T02:05:41Z","cmd":"eval","args":["c.inFlightAllocations[claimUID].sharers","forceRemove"],"ok":true,"ms":1}
+{"ts":"2026-07-04T02:05:41Z","cmd":"bt","args":["--depth","3"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:41Z","cmd":"do","args":["eval c.inFlightAllocations[claimUID].sharers forceRemove; bt --depth 3"],"ok":true,"ms":1}
+{"ts":"2026-07-04T02:05:48Z","cmd":"continue","ok":true,"ms":15}
+{"ts":"2026-07-04T02:05:48Z","cmd":"eval","args":["c.inFlightAllocations[claimUID].sharers","forceRemove"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:48Z","cmd":"bt","args":["--depth","2"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:48Z","cmd":"do","args":["continue; eval c.inFlightAllocations[claimUID].sharers forceRemove; bt --depth 2"],"ok":true,"ms":16}
+{"ts":"2026-07-04T02:05:48Z","cmd":"continue","ok":true,"ms":58}
+{"ts":"2026-07-04T02:05:48Z","cmd":"eval","args":["c.inFlightAllocations[claimUID].sharers","forceRemove"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:48Z","cmd":"bt","args":["--depth","2"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:48Z","cmd":"do","args":["continue; eval c.inFlightAllocations[claimUID].sharers forceRemove; bt --depth 2"],"ok":true,"ms":60}
+{"ts":"2026-07-04T02:05:48Z","cmd":"continue","ok":true,"ms":14}
+{"ts":"2026-07-04T02:05:49Z","cmd":"eval","args":["c.inFlightAllocations[claimUID].sharers","forceRemove"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:49Z","cmd":"bt","args":["--depth","2"],"ok":true,"ms":0}
+{"ts":"2026-07-04T02:05:48Z","cmd":"do","args":["continue; eval c.inFlightAllocations[claimUID].sharers forceRemove; bt --depth 2"],"ok":true,"ms":14}
+{"ts":"2026-07-04T02:06:57Z","cmd":"stop","ok":true,"ms":1}

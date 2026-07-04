@@ -1,0 +1,7 @@
+{"ts":"2026-07-04T01:22:25Z","cmd":"launch","args":["--test","./pkg/kubelet/images/pullmanager","--break","pkg/kubelet/images/pullmanager/locks.go:44","--","-run","TestStripedLockSetReproPanic"],"ok":true,"ms":67641}
+{"ts":"2026-07-04T01:23:36Z","cmd":"eval","args":["s.size"],"ok":true,"ms":2}
+{"ts":"2026-07-04T01:23:36Z","cmd":"eval","args":["len(s.locks)"],"ok":true,"ms":1}
+{"ts":"2026-07-04T01:23:41Z","cmd":"break","args":["--file","pkg/kubelet/images/pullmanager/locks.go","--line","44","--condition","keyToID(key, s.size) \u003e= 31"],"ok":false,"ms":0,"err":"unknown flag --file"}
+{"ts":"2026-07-04T01:23:41Z","cmd":"eval","args":["keyToID(key, s.size)"],"ok":true,"ms":4}
+{"ts":"2026-07-04T01:23:44Z","cmd":"trace","args":["--func","k8s.io/kubernetes/pkg/kubelet/images/pullmanager.keyToID","--capture","sliceSize"],"ok":false,"ms":0,"err":"unknown flag --func"}
+{"ts":"2026-07-04T01:23:44Z","cmd":"continue","ok":true,"ms":16}

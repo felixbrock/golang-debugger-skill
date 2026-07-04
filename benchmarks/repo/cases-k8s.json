@@ -13,7 +13,9 @@
     "codelines": 21,
     "pkgs": [
       "./pkg/scheduler/framework/plugins/dynamicresources/"
-    ]
+    ],
+    "pr": 140176,
+    "symptom": "With the GenericWorkload and DRAWorkloadResourceClaims feature gates enabled, we run PodGroups whose Pods share a single ResourceClaim, with devices coming from a ResourceSlice that has `spec.allNodes: true`. The first Pod of the group schedules fine; the moment the second Pod of the same group enters a scheduling cycle, kube-scheduler panics:\n\n    runtime error: invalid memory address or nil pointer dereference\n    ...\n    k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodeaffinity.NewLazyErrorNodeSelector(...)\n    k8s.io/kubernetes/pkg/scheduler/framework/plugins/dynamicresources.(*DynamicResources).PreFilter(...)\n\nThis is 100% reproducible with allNodes ResourceSlices; with a normal node-selector-carrying ResourceSlice it does not happen."
   },
   {
     "sha": "f5e2b0fa42891720f845860c8c9a92bf09e00d22",
@@ -29,7 +31,9 @@
     "codelines": 16,
     "pkgs": [
       "./pkg/kubelet/"
-    ]
+    ],
+    "pr": 139850,
+    "symptom": "On a single-node cluster of 1.36.0 with 8-day uptime, the kubelet process memory keeps growing. A heap profile shows almost a million live cancelable contexts:\n\n    Type: inuse_objects\n    Showing nodes accounting for 1369047, 97.00% of 1411414 total\n        642456 45.52%  context.(*cancelCtx).propagateCancel\n        380137 26.93%  context.withCancel (inline)\n        276216 19.57%  context.(*cancelCtx).Done\n    ...cumulative paths dominated by:\n        k8s.io/kubernetes/pkg/kubelet.(*podWorkers).podWorkerLoop\n        k8s.io/kubernetes/pkg/kubelet.(*Kubelet).SyncPod\n        k8s.io/apimachinery/pkg/util/wait.PollUntilContextTimeout\n\nThe count grows steadily with every pod sync; it did not happen on 1.35. Nothing about the workload is unusual \u2014 a handful of pods restarting normally."
   },
   {
     "sha": "e86d4e002a81ece87139b43fba9aa8808b501bbf",
@@ -48,7 +52,9 @@
     "pkgs": [
       "./pkg/kubelet/nodeshutdown/",
       "./pkg/kubelet/nodeshutdown/systemd/"
-    ]
+    ],
+    "pr": 137141,
+    "symptom": "Our kubelets crash after a few weeks of uptime with:\n\n    runtime: program exceeds 10000-thread limit\n    fatal error: thread exhaustion\n\nBefore the crash, top shows kubelet at ~80GB RSS and several thousand percent CPU. Dumping goroutines shows thousands of them stuck like this:\n\n    goroutine 63494 [select, 39 minutes]:\n    k8s.io/kubernetes/vendor/github.com/godbus/dbus/v5.(*signalChannelData).deferredDeliver(...)\n        vendor/github.com/godbus/dbus/v5/default_handler.go:332\n    created by k8s.io/kubernetes/vendor/github.com/godbus/dbus/v5.(*signalChannelData).deliver\n\nThe affected nodes have a flaky logind/dbus setup (dbus calls sometimes error). Kubelet should not crash and should keep its memory and thread footprint low even when dbus is unhealthy."
   },
   {
     "sha": "89bf57885306efc26011a5ce13b36662a4c73726",
@@ -68,7 +74,9 @@
     "pkgs": [
       "./pkg/scheduler/",
       "./pkg/scheduler/backend/cache/"
-    ]
+    ],
+    "pr": 138445,
+    "symptom": "We schedule PodGroups (GenericWorkload feature gate enabled). When a member Pod that the scheduler has assumed to a node is then deleted (its deletionTimestamp gets set before binding completes), the scheduler keeps treating that Pod as an unschedulable member of its group indefinitely: the group's internal state never empties, even long after the Pod object is fully gone from the API server, and the group can be blocked from ever completing scheduling. Restarting kube-scheduler clears it."
   },
   {
     "sha": "d57b170cda65d284030d6773f7b967f224a6158b",
@@ -84,7 +92,9 @@
     "codelines": 8,
     "pkgs": [
       "./pkg/scheduler/backend/heap/"
-    ]
+    ],
+    "pr": 139643,
+    "symptom": "The scheduler_pending_pods metric permanently overcounts when PodGroups are in use. Reproduction: create 3 pods of the same PodGroup one by one \u2014 the gauge ends at 6 instead of 3. It never comes back down after the pods schedule or are deleted; over days the reported backlog drifts arbitrarily far from the real queue depth, breaking our autoscaling alerts based on this metric."
   },
   {
     "sha": "c2cd34a6eddf7614146f00a84b9ea85981c2caf7",
@@ -100,7 +110,9 @@
     "codelines": 11,
     "pkgs": [
       "./pkg/controller/job/"
-    ]
+    ],
+    "pr": 139457,
+    "symptom": "When a Job's pods hit a failure and the controller goes into pod-creation backoff, kube-controller-manager starts logging status update failures for the Job every sync:\n\n    \"Operation cannot be fulfilled on jobs.batch ... : cannot set more ready pods than active pods\" (422 Unprocessable Entity)\n\nWhile this repeats, terminated pods of the Job stay stuck in Terminating with the batch.kubernetes.io/job-tracking finalizer still on them, and the Job's status (succeeded/failed counts) stays stale. Everything unwedges by itself once the backoff period elapses. Started happening after upgrading past 1.31."
   },
   {
     "sha": "1af59c2d1f7bbfe23156f893d929c20ca80a2009",
@@ -116,7 +128,9 @@
     "codelines": 9,
     "pkgs": [
       "./pkg/kubelet/images/pullmanager/"
-    ]
+    ],
+    "pr": 138937,
+    "symptom": "Kubelet 1.35 panics shortly after startup when syncing pods, and systemd restarts it in a loop. We have maxParallelImagePulls: 500 in the kubelet config and the KubeletEnsureSecretPulledImages feature gate at its default (true). Panic:\n\n    E0509 20:48:26.080758 panic.go:115] \"Observed a panic\" panic=\"runtime error: index out of range [63] with length 31\"\n    k8s.io/kubernetes/pkg/kubelet/images/pullmanager.(*StripedLockSet).Lock(...)\n        pkg/kubelet/images/pullmanager/locks.go:44\n    k8s.io/kubernetes/pkg/kubelet/images/pullmanager.(*PullManager).MustAttemptImagePull(...)\n\nWith maxParallelImagePulls left at default the panic does not occur."
   },
   {
     "sha": "de391ca4a4dfe6288287088a8f8ea8bc2352d5b8",
@@ -133,7 +147,9 @@
     "codelines": 4,
     "pkgs": [
       "./pkg/kubelet/cm/cpumanager/state/"
-    ]
+    ],
+    "pr": 139087,
+    "symptom_excluded": "error-message cleanup; no honest diagnosis-time symptom exists"
   },
   {
     "sha": "9f192ba95aa519007eb3abcd9146a47316f41921",
@@ -149,7 +165,9 @@
     "codelines": 49,
     "pkgs": [
       "./pkg/scheduler/framework/plugins/dynamicresources/"
-    ]
+    ],
+    "pr": 139418,
+    "symptom": "We run DRA with PodGroups whose Pods share a ResourceClaim. When one Pod of a group hits a transient failure during binding (e.g. a conflict writing the claim status), the rest of the group gets stuck: the remaining Pods never finish scheduling, and the shared ResourceClaim is left with an updated resourceVersion but no allocation. The scheduler makes no further progress on that claim until we restart kube-scheduler. A single clean retry of the failed Pod should have recovered it."
   },
   {
     "sha": "bb09ec215959e6c98dabacc3496dfddff9a2e1b6",
@@ -165,6 +183,8 @@
     "codelines": 3,
     "pkgs": [
       "./cmd/kubelet/app/"
-    ]
+    ],
+    "pr": 136614,
+    "symptom": "After setting a kube-reserved CPU value that is not a whole number of millicores (e.g. cpu=100.5m) in the kubelet config, the node floods the apiserver with node status PATCH updates \u2014 many per second, continuously \u2014 completely ignoring nodeStatusReportFrequency. apiserver audit logs show the kubelet updating node allocatable in every request. With a round millicore value the update rate is normal."
   }
 ]

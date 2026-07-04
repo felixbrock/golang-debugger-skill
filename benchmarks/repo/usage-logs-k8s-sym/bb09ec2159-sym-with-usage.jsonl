@@ -1,0 +1,12 @@
+{"ts":"2026-07-04T03:17:56Z","cmd":"launch","args":["--test","./cmd/kubelet/app","--break","cmd/kubelet/app/server.go:1372","--","-run","TestReproFractionalKubeReservedCPU"],"ok":true,"ms":48394}
+{"ts":"2026-07-04T03:18:49Z","cmd":"eval","args":["q.String()"],"ok":true,"ms":1}
+{"ts":"2026-07-04T03:18:49Z","cmd":"eval","args":["q.ScaledValue(resource.Micro)"],"ok":true,"ms":9}
+{"ts":"2026-07-04T03:18:49Z","cmd":"eval","args":["q.MilliValue()"],"ok":true,"ms":0}
+{"ts":"2026-07-04T03:18:49Z","cmd":"eval","args":["q.i"],"ok":true,"ms":0}
+{"ts":"2026-07-04T03:18:56Z","cmd":"eval","args":["q.s"],"ok":true,"ms":0}
+{"ts":"2026-07-04T03:18:56Z","cmd":"eval","args":["call q.String()"],"ok":true,"ms":0}
+{"ts":"2026-07-04T03:18:56Z","cmd":"eval","args":["call q.ScaledValue(-6)"],"ok":true,"ms":0}
+{"ts":"2026-07-04T03:20:00Z","cmd":"print","args":["(q.i.value)"],"ok":false,"ms":0,"err":"unknown command \"print\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-04T03:20:00Z","cmd":"print","args":["(q.i.scale)"],"ok":false,"ms":0,"err":"unknown command \"print\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-04T03:20:00Z","cmd":"quit","ok":false,"ms":0,"err":"unknown command \"quit\"; run gdbg with no arguments for help"}
+{"ts":"2026-07-04T03:20:05Z","cmd":"stop","ok":true,"ms":1}
