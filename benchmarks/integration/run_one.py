@@ -95,8 +95,12 @@ def main() -> None:
                 if BINSPECT_RE.search(cmd):
                     binspect_calls += 1
         if ev.get("type") == "result":
+            # a run can emit >1 result event (restart/nested); the largest
+            # carries the main run's cumulative usage, the last may not
             u = ev.get("usage", {})
-            tokens = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
+            t = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
+            if tokens is None or t > tokens:
+                tokens = t
 
     # kill leftover processes first (a running bin/rates blocks the restore),
     # then restore pristine tests + binary so tampering can't fake a pass

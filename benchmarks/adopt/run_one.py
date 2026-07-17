@@ -149,8 +149,12 @@ def main() -> None:
                 if is_gdbg:
                     gdbg_calls += 1
         if ev.get("type") == "result":
+            # a run can emit >1 result event (restart/nested); the largest
+            # carries the main run's cumulative usage, the last may not
             u = ev.get("usage", {})
-            tokens = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
+            t = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
+            if tokens is None or t > tokens:
+                tokens = t
 
     passed = subprocess.run(["go", "test", "./..."], cwd=work, capture_output=True,
                             timeout=300, env=env).returncode == 0

@@ -1,6 +1,6 @@
 ---
 name: go-debugger
-description: Debug a Go program or failing test with gdbg — set breakpoints (line, function, conditional, hit-count, logpoint, or watchpoint), run and step, read locals as real Go values (slices/maps/structs/interfaces), change a variable mid-run, inspect goroutines, and find declarations/definitions/references. Use when a Go program returns a wrong value or panics and you need to see runtime state instead of adding fmt.Println, to stop where a panic is raised, to watch a value change, or to see what a goroutine is doing.
+description: Debug a Go program or failing test with gdbg — set breakpoints (line, function, conditional, hit-count, logpoint, or watchpoint), run and step, read locals as real Go values (slices/maps/structs/interfaces), change a variable mid-run, inspect goroutines, and find declarations/definitions/references. Reach for it on a *runtime* question — a wrong value, an unexpected branch/state, a panic, a goroutine doing something unexplained — when the symptom is far from its cause and reading has stalled, instead of adding fmt.Println. Read first when the failing test plus a quick read already point at the fix; the debugger earns its cost where the flow is too tangled or too distant to trace by eye.
 ---
 
 # go-debugger
@@ -12,6 +12,75 @@ arguments for the full command list.
 Requires `gdbg` and `dlv` on PATH
 (`go install github.com/go-delve/delve/cmd/dlv@latest`); `gopls` for
 def/hover/refs. dlv needs a Go toolchain at least as new as it was built with.
+
+## When to reach for it (and when not)
+
+Read first. The debugger earns its cost only on a question you can't answer by
+reading — what decides that is not repo size but the **distance between the
+symptom and its cause**. Decide *before* you launch:
+
+**Reach for gdbg** when you have a **runtime question at a place you can name**:
+- a value is **wrong** and the code that produced it is far from where it
+  surfaces — you need the real inputs/flow, not another file read;
+- an **unexpected branch, type, or state** at runtime that reading can't pin
+  down;
+- a **panic** — `launch` then `continue` lands on the raising frame with its
+  arguments;
+- behavior reading **can't see at all**: what actually crossed a process or
+  service boundary, what a goroutine is blocked on;
+- you want to **test a fix live** with `set --then continue` before editing.
+
+**Don't launch — just read/grep — when** the failing test plus a quick read
+already point at the fix (small, localized bugs): a debugging detour only adds
+cost, and it stays pure overhead no matter how big the repo is.
+
+**Stay cheap.** Keep launches few: one session with several breakpoints, or
+one `trace`, beats re-launching. If 2–3 probes haven't localized it, stop and
+go back to reading — you're probably at the wrong layer, and more debugging
+will only burn tokens.
+
+**Fix once, don't churn.** When you've found the cause, make **one** careful,
+minimal edit and run the narrowed test. If it still fails, do **not**
+guess-and-edit again. Read the exact failing assertion, or break at it and
+`vars`/`eval` the actual-vs-expected values to see *why* before you touch the
+code again. Better still, validate a fix hypothesis **without editing at
+all**: `set` the suspect value and `continue` to watch the outcome change.
+More than ~2–3 edit→test cycles means you're guessing — go back to
+understanding.
+
+## Tap, don't walk (hard rules)
+
+The debugger **aims your reading**; it rarely hands you the fix. The pattern
+that works: break at the **sink** — where the wrong result surfaces (the emit,
+the return, the failing assert) — read **which path fired and the deciding
+values there**, `bt` back to the code that decided it, and **read that code**.
+One or two launches, then you're reading.
+
+- **`bt` named a `file:line` → STOP; do not launch again.** Read that line.
+  The fix is in that frame or its **caller** — never break into a *callee* the
+  backtrace names just to "confirm" its return value; read the caller that
+  decided to use it.
+- **Budget: 2 launches (a `trace` counts).** Before a 3rd probe, state in one
+  sentence the exact runtime fact you still lack *and cannot get by reading*.
+  If you can't, you're done debugging — read.
+- **NEVER HIT means the sink is elsewhere: READ, don't re-guess.** Grep the
+  wrong value / read the emit site to find the real `file:line`; do not
+  relaunch at another guessed location. Never use the debugger to *search* for
+  where to break — a failing test that names the wrong value (an error code, a
+  message) is a grep task, not a debugger task.
+- **`eval` can't call your functions or methods.** Break *inside* the method
+  and read its inputs, or read the code. **Never add
+  `fmt.Println`/`log.Printf`** — print-debugging round-trips an edit + rerun
+  per question and is the signature of losing runs. Use `gdbg vars` to see
+  *all* locals at one stop instead of re-launching to change `--capture`.
+- **State only what the output shows.** Cite the exact command and the output
+  line that proves a claim, or say "unknown". A test that just failed without
+  ever pausing does **not** mean your line never ran — check the NEVER HIT
+  report on exit, or `gdbg breaks` for hit counts, before trusting silence.
+- **Degraded tooling → stop and read.** Breakpoints that won't resolve or
+  values that won't `eval` mean the debugger can't answer on this build;
+  relaunching won't change that. Stepping is for a short hop you can't read —
+  never to traverse a path.
 
 ## Start a session
 
@@ -109,7 +178,8 @@ Several commands in one call: `gdbg do "vars; step over; vars"`.
   breakpoint was NEVER HIT, the decision happened upstream — breakpoint the
   guards that should have called it and read their inputs.
 - **Wrong value.** Break where it is computed, `vars`/`eval` to see the real
-  inputs, `step` to watch it go wrong, `set` to test a fix without recompiling.
+  inputs, `set` to test a fix without recompiling. Reach for `step` only for a
+  short hop you can't read — not to walk the whole path.
 - **Panic.** `launch`, `continue` — you land on the raising frame with its
   arguments. `bt`, `frame up` to walk out to your code.
 - **Unexpected mutation.** Step until the variable is in scope, `gdbg watch

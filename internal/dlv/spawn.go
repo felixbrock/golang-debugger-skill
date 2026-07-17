@@ -48,7 +48,7 @@ func Spawn(dir, mode, target string, buildFlags string, targetArgs []string, env
 	if env != nil {
 		cmd.Env = env
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.SysProcAttr = sysProcAttr()
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

@@ -169,9 +169,12 @@ class Bench:
                     if cmd.strip().startswith("gdbg") or " gdbg " in cmd:
                         gdbg_calls += 1
             if ev.get("type") == "result":
+                # a run can emit >1 result event (restart/nested); the largest
+                # carries the main run's cumulative usage, the last may not
                 u = ev.get("usage", {})
-                tokens = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
-                turns = ev.get("num_turns")
+                t = sum(v for k, v in u.items() if k.endswith("_tokens") and isinstance(v, int))
+                if tokens is None or t > tokens:
+                    tokens, turns = t, ev.get("num_turns")
         return {"gdbg_calls": gdbg_calls, "tokens": tokens, "turns": turns, "timed_out": out == ""}
 
 
